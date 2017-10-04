@@ -11,11 +11,11 @@
 	require_once("Classes/TextHelper.php"); 
 	$fTextHelper = new TextHelper();
 
-	/*$fFirstName    = "ΝΙΚΟΛΑΟΣ";
+	$fFirstName    = "ΝΙΚΟΛΑΟΣ";
 	$fLastName     = "ΣΙΑΤΡΑΣ";
 	$fFathersName  = "ΚΩΝΣΤΑΝΤΙΝΟΣ";
 	$fMothersName  = "ΜΑΡΙΑ";
-	$fBirthYear    = 1986;*/
+	$fBirthYear    = 1986;
 
 	$fVoterIdFound = false;
 	if(isset($_POST['TextBoxFirstName']))

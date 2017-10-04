@@ -13,12 +13,44 @@
 	
 	$fUniqueKey = $_GET['UniqueKey'];
 	
+	$fErrorCode = 0;
+	$fErrorDescription = "";
+	
 	if(isset($_POST['TextBoxEmail']))
 	{
 		$fEmail = $_POST['TextBoxEmail'];
 		$fMobilePhone = $_POST['TextBoxMobile'];
 		$fPhone = $_POST['TextBoxTelephone'];
-	
+		$fStreet = trim($_POST['TextBoxStreetName']);
+		$fStreetNo = trim($_POST['TextBoxStreetNumber']);
+		$fZip = trim($_POST['TextBoxZipCode']);
+		$fMunicipality = trim($_POST['TextBoxMunicipality']);
+		$fCounty = trim($_POST['TextBoxDivision']);
+		
+		$addressIsValid = false;
+		if($fStreet!="" && $fStreetNo!="" && $fZip !="" &&$fMunicipality !="")
+		{
+			$addressIsValid = true;
+		}
+		else
+		{
+			$fErrorCode = 101;
+			$fErrorDescription = 'Δεν έχετε εισάγει την Διεύθυνση κατοικίας σας !';
+		}
+		
+		
+		$sql = "UPDATE `voter_registration_temp` SET `Phone`=?,`Street`=?,`StreetNo`=?,`Zip`=?,`Municipality`=?,`County`=?  WHERE `UniqueKey`=?";
+		$command = new MySQLCommand($connection, $sql);
+		$command->Parameters->setString(1,$fPhone);
+		$command->Parameters->setString(2,$fStreet);
+		$command->Parameters->setString(3,$fStreetNo);
+		$command->Parameters->setString(4,$fZip);
+		$command->Parameters->setString(5,$fMunicipality);
+		$command->Parameters->setString(6,$fCounty);
+		$command->Parameters->setString(7,$fUniqueKey);
+		$command->ExecuteQuery();
+
+		
 		$sql = "SELECT `EMailIsVerified`,`MobileIsVerified` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
 		$command = new MySQLCommand($connection, $sql);
 		$command->Parameters->setString(1,$fUniqueKey);
@@ -28,7 +60,7 @@
 			$emailIsVerified = $reader->getValue(0);
 			$mobileIsVerified = $reader->getValue(1); 
 			
-			if ($emailIsVerified==1 && $mobileIsVerified ==1)
+			if ($emailIsVerified==1 && $mobileIsVerified ==1 && $addressIsValid)
 			{
 				header('refresh: 0; url=Step3.php');
 				exit;
@@ -48,14 +80,6 @@
 		}
 		$reader->Close();
 		
-		$sql = "UPDATE `voter_registration_temp` SET `Phone`=?  WHERE `UniqueKey`=?";
-		$command = new MySQLCommand($connection, $sql);
-		$command->Parameters->setString(1,$fPhone);
-		$command->Parameters->setString(2,$fUniqueKey);
-		$command->ExecuteQuery();
-
-		
-		
 	}
 	
 	
@@ -73,7 +97,7 @@
 	
 	// Get User Data from db
 	$tempRecordFound = false;
-	$sql = "SELECT `EMail`,`EMailIsVerified`,`MobilePhone`,`MobileIsVerified`,`Phone` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
+	$sql = "SELECT `EMail`,`EMailIsVerified`,`MobilePhone`,`MobileIsVerified`,`Phone`,`Street`,`StreetNo`,`Zip`,`Municipality`,`County` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
 	$command = new MySQLCommand($connection, $sql);
 	$command->Parameters->setString(1,$fUniqueKey);
 	$reader = $command->ExecuteReader();
@@ -89,6 +113,11 @@
 		$fVerifyMobileButtonLabel = ($fMobileIsVerified ==1) ? "Επαληθέυτηκε" :  'Επαλήθευση κινητού τηλεφώνου';
 		
 		$fPhone = $reader->getValue(4);
+		$fStreet = $reader->getValue(5);
+		$fStreetNo = $reader->getValue(6);
+		$fZip = $reader->getValue(7);
+		$fMunicipality = $reader->getValue(8);
+		$fCounty = $reader->getValue(9);
 	}
 	$reader->Close();
 	
@@ -120,95 +149,207 @@
     <script src="assets/dist/js/framework/bootstrap.min.js"></script>
     <script src="assets/dist/js/language/el_GR.js"></script>   
         
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHTjDSX9qbea-E-zxAWDQgJpi9hw-RvwU&libraries=places&language=el&callback=InitializeAddressAutoComplete"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?php echo Google_Map_API_KEY;?>&libraries=places&language=el&callback=InitAddressAutoComplete"></script>
     
 	<script type="text/javascript">
-		function InitializeAddressAutoComplete(){
-		  	Autocomplete = new google.maps.places.Autocomplete($("#TextBoxAddress")[0], {});
-		    map = new google.maps.Map(document.getElementById('map'), {
-		      zoom: 17,
-		      center: {lat: 37.9752816, lng: 23.736729}
-		    });
-			Autocomplete.bindTo('bounds', map);
-			var infowindow = new google.maps.InfoWindow();
-			var infowindowContent = document.getElementById('infowindow-content');
-			infowindow.setContent(infowindowContent);
-			var marker = new google.maps.Marker({
-				map: map,
-				anchorPoint: new google.maps.Point(0, -29)
-			});
-			infowindowG = infowindow;
-			markerG = marker;	
-			Autocomplete.addListener('place_changed', function() {
-				infowindow.close();
-				marker.setVisible(false);
-				var place = Autocomplete.getPlace();		
-				if (!place.geometry) return;
-				
-			 	for (var i = 0; i < place.address_components.length; i++) 
-			 	{
-			      for (var j = 0; j < place.address_components[i].types.length; j++) 
-			      {
-			        if (place.address_components[i].types[j] == "route") 
-			        {	          
-			          	myAddress.StreetName = place.address_components[i].long_name;
-						$("#TextBoxStreetName").val(myAddress.StreetName);
-			        }
-			        if (place.address_components[i].types[j] == "street_number") 
-			        {	          
-			          	myAddress.StreetNumber = place.address_components[i].long_name;
-						$("#TextBoxStreetNumber").val(myAddress.StreetNumber);
-			        }
-			        if (place.address_components[i].types[j] == "postal_code") 
-			        {	          
-			          	myAddress.Zip = place.address_components[i].long_name;
-						$("#TextBoxZipCode").val(myAddress.Zip);
-			        }
-			        
-			        if (place.address_components[i].types[j] == "locality" || place.address_components[i].types[j] == "administrative_area_level_5")
-			        {	          
-			          	myAddress.Municipality = place.address_components[i].long_name;
-						$("#TextBoxMunicipality").val(myAddress.Municipality);
-			        }
-			        if (place.address_components[i].types[j] == "administrative_area_level_3" ||place.address_components[i].types[j] == "administrative_area_level_4") 
-			        {	          
-			          	myAddress.Division = place.address_components[i].long_name;
-						$("#TextBoxDivision").val(myAddress.Division);
-			        }
-			        if (place.address_components[i].types[j] == "country") 
-			        {
-			          	myAddress.Country = place.address_components[i].long_name;
-			        }
-			        else if (place.address_components[i].types[j] == "locality")
-			        {	          
-			          	myAddress.Locality = place.address_components[i].long_name;
-			        }
-			      }
+	
+	
+		$(document).ready(function() {
+			PreventFormSubmitOnEnterButtonHit();
+			$('#ErrorMsgAddress').hide();
+			CustomAddressClick();
+			
+			<?php
+				if($fErrorCode>0)
+				{
+			?>
+					$("#ErrorMsg").html('<?php echo $fErrorDescription;?>');
+					$('#ErrModal').modal('show');
+			<?php
+				}
+			?>
+		});
+		
+		function PreventFormSubmitOnEnterButtonHit()
+		{
+			  $(window).keydown(function(event){
+			    if(event.keyCode == 13) {
+			      event.preventDefault();
+			      return false;
 			    }
-			    
-				if (place.geometry.viewport) 
-				{
-					map.fitBounds(place.geometry.viewport);
-				} 
-				else 
-				{
-					map.setCenter(place.geometry.location);
-					map.setZoom(17);  // Why 17? Because it looks good.
-				}
-				marker.setPosition(place.geometry.location);
-				marker.setVisible(true);
-				var address = '';
-				if (place.address_components) 
-				{
-					address = myAddress.StreetName + ' ' + myAddress.StreetNumber + ', ' + myAddress.Municipality;
-					if(myAddress.StreetName=='') address = myAddress.Municipality;
-				}
-				infowindowContent.children['place-address'].textContent = address;
-				infowindow.open(map, marker);
-				AddressValidation();			
+			  });
+		}
+		
+		// Google Map
+		var placeSearch, autocomplete;
+		var componentForm = {
+			street_number: 'short_name',
+			route: 'long_name',
+			locality: 'long_name',
+			administrative_area_level_1: 'short_name',
+			country: 'long_name',
+			postal_code: 'short_name'
+		};
+		
+		var fAddressAutoComplete = null;
+		var fGoogleMap = null;
+		var fGoogleMapMarker = null;
+		
+		function InitAddressAutoComplete() 
+		{
+	        fAddressAutoComplete = new google.maps.places.Autocomplete((document.getElementById('TextBoxAddress')),{types: ['geocode']});
+	        fAddressAutoComplete.addListener('place_changed', FillInAddress);
+	        
+			fGoogleMap = new google.maps.Map(document.getElementById('map'), {
+				zoom: 17,
+				center: {lat: 37.9752816, lng: 23.736729}
 			});
 		}
+	    
+	    
+	    function FillInAddress() 
+	    {
+	    	// Get the place details from the autocomplete object.
+	        var place = fAddressAutoComplete.getPlace();
+	        
+	        // Set map to that place
+	        fGoogleMap.setCenter(place.geometry.location);
+			fGoogleMap.setZoom(17); 
+
+	      	// Set market to place
+	      	if(fGoogleMapMarker != null) { fGoogleMapMarker.setMap(null); }
+	      	fGoogleMapMarker = new google.maps.Marker({ position: place.geometry.location, map: fGoogleMap,title: ''});
+	        
+	        // Get each component of the address from the place details
+	        // and fill the corresponding field on the form.
+	        for (var i = 0; i < place.address_components.length; i++) 
+	        {
+				var addressType = place.address_components[i].types[0];
+				if (componentForm[addressType]) 
+				{
+					var val = place.address_components[i][componentForm[addressType]];
+					try
+					{
+						for (var j = 0; j < place.address_components[i].types.length; j++) 
+				      	{
+					        if (place.address_components[i].types[j] == "route") 
+					        {	          
+								$("#TextBoxStreetName").val(place.address_components[i].long_name);
+					        }
+					        else if (place.address_components[i].types[j] == "street_number") 
+					        {	          
+								$("#TextBoxStreetNumber").val(place.address_components[i].long_name);
+					        }
+					        else if(place.address_components[i].types[j] == "postal_code") 
+					        {	          
+								$("#TextBoxZipCode").val(place.address_components[i].long_name);
+								
+								// Get division from zip
+								$.post('AJAX_GetDhmosAndNomosFromZip.php', {Zip:place.address_components[i].long_name}, 
+									function(data){
+										var dhmos = data["Dhmos"];
+										var nomos = data["Nomos"];
+										$("#TextBoxMunicipality").val(dhmos);
+										$("#TextBoxDivision").val(nomos);
+									});	
+					        }
+					        else if(place.address_components[i].types[j] == "locality" || place.address_components[i].types[j] == "administrative_area_level_5")
+					        {	          
+								//$("#TextBoxMunicipality").val(place.address_components[i].long_name);
+					        }
+				      	}
+			      	}
+			      	catch(ex)
+			      	{
+			      		alert(ex);
+			      	}
+				}
+	        }
+      	}
+      	
+      	
+      	function GetCountyFromMunicipality()
+		{
+			var municipality = $('#ComboBoxMunicipality').val();
+			$('#TextBoxMunicipality').val($('#ComboBoxMunicipality option:selected').text());
+			$.post('AJAX_GetCountyFromMunicipality.php', {Municipality:municipality }, 
+				function(data){
+					$("#TextBoxDivision").val(data);
+				});	
+		}
+
+		function CustomAddressClick()
+		{
+			if($("#CustomAddress").is(':checked'))		
+			{
 	
+				$('#TextBoxAddress').attr('readonly', 'readonly');
+				$('#TextBoxAddress').css('background-color', '#fffdf3');
+				
+				$("#NoNumbersAddress").attr('read-only','');
+				
+				$('#TextBoxMunicipality').hide();
+				$('#ComboBoxMunicipality').show();
+
+				
+				$('#TextBoxStreetName').removeAttr("readonly");
+				$('#TextBoxStreetName').css('background-color', '');
+				
+				$('#TextBoxStreetNumber').removeAttr("readonly");
+				$('#TextBoxStreetNumber').css('background-color', '');
+				
+				$('#TextBoxZipCode').removeAttr("readonly");
+				$('#TextBoxZipCode').css('background-color', '');
+				
+				$('#TextBoxMunicipality').removeAttr("readonly");
+				$('#TextBoxMunicipality').css('background-color', '');
+						
+				NoNumbersAddressClick();
+			}	
+			else
+			{
+				$('#TextBoxAddress').removeAttr("readonly");				
+				$('#TextBoxAddress').css('background-color', '');
+				
+				$("#NoNumbersAddress").attr('read-only', 'read-only');
+				
+				$('#TextBoxMunicipality').show();
+				$('#ComboBoxMunicipality').hide();
+
+				
+				$('#TextBoxStreetName').attr('readonly', 'readonly');
+				$('#TextBoxStreetName').css('background-color', '#fffdf3');
+				
+				$('#TextBoxStreetNumber').attr('readonly', 'readonly');
+				$('#TextBoxStreetNumber').css('background-color', '#fffdf3');
+				
+				$('#TextBoxZipCode').attr('readonly', 'readonly');
+				$('#TextBoxZipCode').css('background-color', '#fffdf3');
+				
+				$('#TextBoxMunicipality').attr('readonly', 'readonly');
+				$('#TextBoxMunicipality').css('background-color', '#fffdf3');
+			}
+		}
+	    
+	    
+	    function NoNumbersAddressClick()
+	    {
+	    	if($("#NoNumbersAddress").is(':checked'))		
+			{
+		    	$('#TextBoxStreetNumber').attr('disabled', true);
+				$('#TextBoxStreetNumber').css('background-color', '#fffdf3');
+			}
+			else
+			{
+				$('#TextBoxStreetNumber').attr('disabled', false);
+				$('#TextBoxStreetNumber').css('background-color', '');
+			}
+	    }
+		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		
 		function OpenEmailVerificationForm()
 		{
 			$('#SendEmailMsg').show();
@@ -225,7 +366,7 @@
 			$("#ButtonSendEmailVerification").attr("disabled", true);		
 			$.post("AJAX_SendEmailVerificationCode.php", { Email: $("#TextBoxEmail").val(), UniqueKey: '<?php echo $fUniqueKey;?>' })
 		  	.done(function(data) {	  
-		  		alert(data); 	 	
+		  		//alert(data); 	 	
 		   	 	$('#SendEmailMsg').hide();
 				$('#ButtonSendEmailVerification').hide();		
 				$('#SendEmailDiv').show();
@@ -317,7 +458,6 @@
 			$('#MobileModal').modal('hide');	
 		}
 		
-		
 		function ResetData()
 		{
 			window.location = "index.php";
@@ -365,32 +505,57 @@
             		</div>
             	</div>         	
             	<br/><br/>            
-		        <input type="text" class="form-control" placeholder="* Διεύθυνση κατοικίας" id="TextBoxAddress" name="TextBoxAddress" maxlength="100" />
+		        <input type="text" class="form-control" placeholder="* Διεύθυνση κατοικίας" id="TextBoxAddress" name="TextBoxAddress" maxlength="100" value="<?php echo $_POST['TextBoxAddress'];?>" />
 		        <div class="row">		        	
 		        	<div class="col-sm-6">
 		        		<div class="checkbox">
-				  			<label><input type="checkbox" id="CustomAddress" onclick="CustomAddressClick()" value="">Θέλω να εισάγω μόνος μου την διεύθυνση. (Απαιτείται να γνωρίζετε τον ΤΚ)</label>
+				  			<label><input type="checkbox" id="CustomAddress" onclick="CustomAddressClick();" value="">Θέλω να εισάγω μόνος μου την διεύθυνση. (Απαιτείται να γνωρίζετε τον ΤΚ)</label>
 		        		</div>
 					</div>
 		        	<div class="col-sm-6">
 				        <div class="checkbox">
-						  <label><input type="checkbox" id="NoNumbersAddress" onclick="NoNumbersAddressClick()" value="">Δεν υπάρχει αρίθμηση στην διεύθυνση μου</label>
+						  <label><input type="checkbox" id="NoNumbersAddress" onclick="NoNumbersAddressClick();" value="">Δεν υπάρχει αρίθμηση στην διεύθυνση μου</label>
 						</div>
 				    </div>
 		        </div>
 		        <br/>
-		        <div id="ErrorMsgAddress" class="alert alert-danger"></div>		        
+		        <div id="ErrorMsgAddress" class="alert alert-danger" style=""></div>		        
             	<div class="row">
             		<div class="form-group">
-            			<div class="col-sm-8"><input type="text" disabled="" class="form-control" id="TextBoxStreetName" name="StreetName" placeholder="Οδός" style="background-color:#fffdf3" /></div>
-	            		<div class="col-sm-2"><input type="text" disabled="" class="form-control" id="TextBoxStreetNumber" placeholder="Αριθμός" style="background-color:#fffdf3" /></div>	
-	            		<div class="col-sm-2"><input type="text" disabled="" class="form-control" id="TextBoxZipCode" placeholder="Τ.Κ." style="background-color:#fffdf3" /></div>
+            			<div class="col-sm-8"><input type="text" class="form-control" name="TextBoxStreetName" id="TextBoxStreetName" name="StreetName" placeholder="Οδός" style="background-color:#fffdf3" value="<?php echo $fStreet;?>" /></div>
+	            		<div class="col-sm-2"><input type="text" class="form-control" name="TextBoxStreetNumber" id="TextBoxStreetNumber" placeholder="Αριθμός" style="background-color:#fffdf3" value="<?php echo $fStreetNo;?>" /></div>	
+	            		<div class="col-sm-2"><input type="text" class="form-control" name="TextBoxZipCode" id="TextBoxZipCode" placeholder="Τ.Κ." style="background-color:#fffdf3" value="<?php echo $fZip;?>"  /></div>
             		</div>
             	</div> 
             	<br/>
             	<div class="row">
-            		<div class="col-sm-6"><input type="text" disabled="" class="form-control" id="TextBoxMunicipality" placeholder="Δήμος" style="background-color:#fffdf3" /></div>	
-            		<div class="col-sm-6"><input type="text" disabled="" class="form-control" id="TextBoxDivision" placeholder="Νομός / Τομέας" style="background-color:#fffdf3" /></div>
+            		<div class="col-sm-6">
+            		<input type="text" class="form-control" name="TextBoxMunicipality" id="TextBoxMunicipality" placeholder="Δήμος" style="background-color:#fffdf3" value="<?php echo $fMunicipality;?>"  />
+            		<select class="form-control" placeholder="Δήμος" name="ComboBoxMunicipality" id="ComboBoxMunicipality" style="background-color:#fffdf3" onchange="GetCountyFromMunicipality();">
+						<option value="0" disabled selected>Δήμος</option>
+						
+						<?php
+							$sql = "SELECT `KOD_DHM`,`ONOMA` FROM `YPES_DHMOI` ORDER BY `ONOMA`";
+							$command = new MySqlCommand($connection,$sql);
+							$reader = $command->ExecuteReader();
+							while($reader->Read())
+							{
+								$selected = "";
+								if($_POST['ComboBoxMunicipality'] == $reader->getValue(0))
+								{
+									$selected ='selected="selected"';
+								}
+						?>
+							<option <?php echo $selected;?> value="<?php echo $reader->getValue(0);?>"><?php echo $reader->getValue(1);?></option>
+						<?php
+							}
+							$reader->Close();
+						?>
+						
+					</select>
+       		
+            		</div>	
+            		<div class="col-sm-6"><input type="text" class="form-control" name="TextBoxDivision" id="TextBoxDivision" placeholder="Νομός / Τομέας" style="background-color:#fffdf3" value="<?php echo $fCounty;?>" /></div>
 		        </div>
                 <br/><br/>
                 
