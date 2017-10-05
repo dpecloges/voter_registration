@@ -1,20 +1,20 @@
 <?php  
  	require_once("../Classes/DBConnection.php");
 
-	if(!isset($_POST['invoice']))
-	{
-		echo 'No Data';
-		exit;
-	}
-
-	require_once("../Classes/Mailer.php");
- 	$fMailer = new Mailer();
+	//require_once("../Classes/Mailer.php");
+ 	//$fMailer = new Mailer();
 
 	$fUniqueKey = $_POST['invoice'];
 	$fPayPalParameters = "";
-	foreach ($_POST as $param_name => $param_val) { $fPayPalParameters .= $param_name ."=". $param_val."\n"; }
-		
-		
+	try
+	{
+		foreach ($_POST as $param_name => $param_val) { $fPayPalParameters .= $param_name ."=". $param_val."\n"; }
+	}
+	catch(Exception $ex)
+	{
+	}
+	
+	
 	$sql = 'INSERT INTO `voter_registration` (
 							voter_registration.UniqueKey,
 							voter_registration.FirstName,
@@ -80,7 +80,6 @@
 		// Delete temp record
 		$sql = "DELETE FROM `voter_registration_temp` WHERE `UniqueKey`=?";
 		$command = new MySqlCommand($connection, $sql);
-		$command->Parameters->setString(1,$fPayPalParameters);
-		$command->Parameters->setString(2,$fUniqueKey);
+		$command->Parameters->setString(1,$fUniqueKey);
 		$command->ExecuteQuery();	
 ?>
