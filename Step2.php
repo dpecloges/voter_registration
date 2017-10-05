@@ -62,7 +62,7 @@
 			
 			if ($emailIsVerified==1 && $mobileIsVerified ==1 && $addressIsValid)
 			{
-				header('refresh: 0; url=Step3.php');
+				header('refresh: 0; url=Step3.php?UniqueKey='.$fUniqueKey);
 				exit;
 			}
 			else
@@ -86,11 +86,11 @@
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Delete voter_registration_temp older than 2 hours
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	$dateTimeNow = time();
+	/*$dateTimeNow = time();
  	$dateTimeFrom = date($dateTimeNow - (2 * 3600));
  	$sql = "DELETE FROM `voter_registration_temp` WHERE UNIX_TIMESTAMP(`DateTime`) < ".$dateTimeFrom;
  	$command = new MySqlCommand($connection, $sql);
- 	$command->ExecuteQuery();
+ 	$command->ExecuteQuery();*/
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
  	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -123,7 +123,7 @@
 	
 	if(!$tempRecordFound)
 	{
-		header('refresh: 0; url=Step1.php');
+		header('refresh: 0; url=index.php');
 		exit;
 	}
 ?>
@@ -148,12 +148,13 @@
     <script src="assets/dist/js/formValidation.min.js"></script>
     <script src="assets/dist/js/framework/bootstrap.min.js"></script>
     <script src="assets/dist/js/language/el_GR.js"></script>   
-        
+    
+    <!-- Google Map Scripts -->
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?php echo Google_Map_API_KEY;?>&libraries=places&language=el&callback=InitAddressAutoComplete"></script>
+    <script type="text/javascript" src="js/StepFormsJS/Step2_GoogleMap.js"></script>
+    <!--------------------------->
     
 	<script type="text/javascript">
-	
-	
 		$(document).ready(function() {
 			PreventFormSubmitOnEnterButtonHit();
 			$('#ErrorMsgAddress').hide();
@@ -172,102 +173,17 @@
 		
 		function PreventFormSubmitOnEnterButtonHit()
 		{
-			  $(window).keydown(function(event){
-			    if(event.keyCode == 13) {
-			      event.preventDefault();
-			      return false;
-			    }
-			  });
+			$(window).keydown(function(event)
+			{
+				if(event.keyCode == 13) 
+				{
+					event.preventDefault();
+					return false;
+				}
+			});
 		}
 		
 		// Google Map
-		var placeSearch, autocomplete;
-		var componentForm = {
-			street_number: 'short_name',
-			route: 'long_name',
-			locality: 'long_name',
-			administrative_area_level_1: 'short_name',
-			country: 'long_name',
-			postal_code: 'short_name'
-		};
-		
-		var fAddressAutoComplete = null;
-		var fGoogleMap = null;
-		var fGoogleMapMarker = null;
-		
-		function InitAddressAutoComplete() 
-		{
-	        fAddressAutoComplete = new google.maps.places.Autocomplete((document.getElementById('TextBoxAddress')),{types: ['geocode']});
-	        fAddressAutoComplete.addListener('place_changed', FillInAddress);
-	        
-			fGoogleMap = new google.maps.Map(document.getElementById('map'), {
-				zoom: 17,
-				center: {lat: 37.9752816, lng: 23.736729}
-			});
-		}
-	    
-	    
-	    function FillInAddress() 
-	    {
-	    	// Get the place details from the autocomplete object.
-	        var place = fAddressAutoComplete.getPlace();
-	        
-	        // Set map to that place
-	        fGoogleMap.setCenter(place.geometry.location);
-			fGoogleMap.setZoom(17); 
-
-	      	// Set market to place
-	      	if(fGoogleMapMarker != null) { fGoogleMapMarker.setMap(null); }
-	      	fGoogleMapMarker = new google.maps.Marker({ position: place.geometry.location, map: fGoogleMap,title: ''});
-	        
-	        // Get each component of the address from the place details
-	        // and fill the corresponding field on the form.
-	        for (var i = 0; i < place.address_components.length; i++) 
-	        {
-				var addressType = place.address_components[i].types[0];
-				if (componentForm[addressType]) 
-				{
-					var val = place.address_components[i][componentForm[addressType]];
-					try
-					{
-						for (var j = 0; j < place.address_components[i].types.length; j++) 
-				      	{
-					        if (place.address_components[i].types[j] == "route") 
-					        {	          
-								$("#TextBoxStreetName").val(place.address_components[i].long_name);
-					        }
-					        else if (place.address_components[i].types[j] == "street_number") 
-					        {	          
-								$("#TextBoxStreetNumber").val(place.address_components[i].long_name);
-					        }
-					        else if(place.address_components[i].types[j] == "postal_code") 
-					        {	          
-								$("#TextBoxZipCode").val(place.address_components[i].long_name);
-								
-								// Get division from zip
-								$.post('AJAX_GetDhmosAndNomosFromZip.php', {Zip:place.address_components[i].long_name}, 
-									function(data){
-										var dhmos = data["Dhmos"];
-										var nomos = data["Nomos"];
-										$("#TextBoxMunicipality").val(dhmos);
-										$("#TextBoxDivision").val(nomos);
-									});	
-					        }
-					        else if(place.address_components[i].types[j] == "locality" || place.address_components[i].types[j] == "administrative_area_level_5")
-					        {	          
-								//$("#TextBoxMunicipality").val(place.address_components[i].long_name);
-					        }
-				      	}
-			      	}
-			      	catch(ex)
-			      	{
-			      		alert(ex);
-			      	}
-				}
-	        }
-      	}
-      	
-      	
       	function GetCountyFromMunicipality()
 		{
 			var municipality = $('#ComboBoxMunicipality').val();
@@ -282,7 +198,6 @@
 		{
 			if($("#CustomAddress").is(':checked'))		
 			{
-	
 				$('#TextBoxAddress').attr('readonly', 'readonly');
 				$('#TextBoxAddress').css('background-color', '#fffdf3');
 				
@@ -352,13 +267,28 @@
 		
 		function OpenEmailVerificationForm()
 		{
-			$('#SendEmailMsg').show();
-			$('#ButtonSendEmailVerification').show();	
-			$("#ButtonSendEmailVerification").attr("disabled", false);
-			$('#EmailModal').modal('show');	
-			$('#ErrorMsgEmail').hide();
-			$('#SendEmailDiv').hide();
-			$('#BtnCheckEmailCode').hide();
+			try
+			{
+				$('#emailError').html("");
+				if(IsEMailValid($('#TextBoxEmail').val()))
+				{
+					$('#SendEmailMsg').show();
+					$('#ButtonSendEmailVerification').show();	
+					$("#ButtonSendEmailVerification").attr("disabled", false);
+					$('#EmailModal').modal('show');	
+					$('#ErrorMsgEmail').hide();
+					$('#SendEmailDiv').hide();
+					$('#BtnCheckEmailCode').hide();
+				}
+				else
+				{
+					$('#emailError').html("Το πεδίο Email είναι υποχρεωτικό!");
+				}
+			}
+			catch(e)
+			{
+				alert(e);
+			}
 		}	
 				
 		function SendEMailVerificationCode()
@@ -366,12 +296,19 @@
 			$("#ButtonSendEmailVerification").attr("disabled", true);		
 			$.post("AJAX_SendEmailVerificationCode.php", { Email: $("#TextBoxEmail").val(), UniqueKey: '<?php echo $fUniqueKey;?>' })
 		  	.done(function(data) {	  
-		  		//alert(data); 	 	
-		   	 	$('#SendEmailMsg').hide();
-				$('#ButtonSendEmailVerification').hide();		
-				$('#SendEmailDiv').show();
-				$('#BtnCheckEmailCode').show();
-				$('#TextBoxEMailPin').focus();
+		  		if(data.Error==0)
+		   	 	{
+			   	 	$('#SendEmailMsg').hide();
+					$('#ButtonSendEmailVerification').hide();		
+					$('#SendEmailDiv').show();
+					$('#BtnCheckEmailCode').show();
+					$('#TextBoxEMailPin').focus();
+				}
+				else
+				{
+					$("#ErrorMsgEmail").html(data.ErrorDescr);
+					$('#ErrorMsgEmail').show();
+				}
 		  });
 		}
 		
@@ -402,28 +339,45 @@
 		
 		function OpeMobileVerificationForm()
 		{
-			$("#TextBoxMobilePin").val("");
-			$('#ErrorMsgMobile').hide()
-			$('#SendMobileMsg').show();
-			$('#SendMobileDiv').hide();
-			$('#ButtonCheckMobilePin').hide();
-			$('#ButtonSendSMSVerificationPin').show();
-			$('#ButtonSendVoiceVerificationPin').show();
-			$('#MobileModal').modal('show');
+			$mobileNo = $('#TextBoxMobile').val();
+			if($mobileNo.length<10)
+			{
+				$('#mobileError').html("Το πεδίο κινητό τηλέφωνο είναι υποχρεωτικό!");
+			}
+			else
+			{
+				$("#TextBoxMobilePin").val("");
+				$('#ErrorMsgMobile').hide()
+				$('#SendMobileMsg').show();
+				$('#SendMobileDiv').hide();
+				$('#ButtonCheckMobilePin').hide();
+				$('#ButtonSendSMSVerificationPin').show();
+				$('#ButtonSendVoiceVerificationPin').show();
+				$('#MobileModal').modal('show');
+			}
 		}	
-		
 		
 		function SendMobileSMSVerificationPin()
 		{
 			$.post("AJAX_SendMobileSMSVerificationCode.php", { Mobile: $("#TextBoxMobile").val(), UniqueKey: '<?php echo $fUniqueKey;?>' })
-		  	.done(function(data) {	   	 	
-		   	 	$('#ErrorMsgMobile').hide()
-				$('#SendMobileMsg').hide();
-				$('#SendMobileDiv').show();
-				$('#ButtonCheckMobilePin').show();
-				$('#MobileModal').modal('show');
-				$('#ButtonSendSMSVerificationPin').hide();
-				$('#ButtonSendVoiceVerificationPin').hide();
+		  	.done(function(data) {	  
+	   	 		if(data.Error==0)
+		   	 	{
+			   	 	$('#ErrorMsgMobile').hide()
+					$('#SendMobileMsg').hide();
+					$('#SendMobileDiv').show();
+					$('#ButtonCheckMobilePin').show();
+					$('#MobileModal').modal('show');
+					$('#ButtonSendSMSVerificationPin').hide();
+					$('#ButtonSendVoiceVerificationPin').hide();
+				}
+				else
+				{
+					$("#ErrorMsgMobile").html(data.ErrorDescr);
+					$('#ErrorMsgMobile').show();
+					//$('#TextBoxMobilePin').focus();
+				}
+				
 		  });
 		}
 		
@@ -462,6 +416,16 @@
 		{
 			window.location = "index.php";
 		}
+		
+		function IsEMailValid(email) 
+		{
+		    var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+		    if (filter.test(email)) 
+		    {
+			    return true;
+		    }
+			return false;		   
+		}
 	</script>
 
     <style type="text/css">
@@ -481,14 +445,14 @@
             			<br/><br/>   
 		                <div class="form-group">
 		                    <input type="email" class="form-control" placeholder="* Email" name="TextBoxEmail" id="TextBoxEmail" value="<?php echo $fEmail;?>" maxlength="50" />
-		                	<small class="help-block" style=" color:red;"><?php echo $fEMailError;?></small>
+		                	<small class="help-block" style="color:red;" id="emailError"><?php echo $fEMailError;?></small>
 		                </div>
 		                
 		                <button type="button" class="btn btn-default" <?php if($fEMailIsVerified ==1){?>disabled="disabled"<?php }?> id="ButtonCheckEmail" onclick="OpenEmailVerificationForm();" ><?php echo $fVerifyEmailButtonLabel;?></button>
 		                <br/><br/><br/>
 		                <div class="form-group">
 		                    <input type="tel" class="form-control" placeholder="* Τηλέφωνο κινητό" name="TextBoxMobile" id="TextBoxMobile" maxlength="10" value="<?php echo $fMobilePhone;?>" />
-		                	<small class="help-block" style=" color:red;"><?php echo $fMobileError;?></small>
+		                	<small class="help-block" style=" color:red;" id="mobileError"><?php echo $fMobileError;?></small>
 		                </div>
 						<button type="button" class="btn btn-default" <?php if($fMobileIsVerified ==1){?>disabled="disabled"<?php }?> id="ButtonCheckMobile" onclick="OpeMobileVerificationForm();"><?php echo $fVerifyMobileButtonLabel;?></button>
 						<br/><br/><br/>

@@ -1,8 +1,6 @@
 <?php
 class SMSController
-{
-	//private $fYubotoKey = "53291BAF-70F9-4622-A316-433D9D439F0C";
-	
+{	
     public function __construct(){ }
     
 	public function SendSMSVerificationPin($mobile,$pin)
@@ -16,6 +14,5 @@ class SMSController
 		$data = file_get_contents($str);
 		print $data;
 	}
-
 }
 ?>

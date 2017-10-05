@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once("Classes/DBConnection.php"); 
+header('Content-type: application/json');
 
 require_once("Classes/Mailer.php"); 
 $fMailer = new Mailer();
@@ -8,6 +9,28 @@ $fMailer = new Mailer();
 $fEMail = strtolower(trim($_POST['Email']));
 $fUniqueKey = $_POST['UniqueKey'];
 $fRandomPin = rand(1000,9999);
+
+// Check if email is already registered
+$fEmailIsAlreadyInUse = false;
+$sql = "SELECT `ID` FROM `voter_registration` WHERE `EMail`=?";
+$command = new MySqlCommand($connection, $sql);
+$command->Parameters->setString(1, $fEMail);
+$reader = $command->ExecuteReader();
+if($reader->Read())
+{
+	$fEmailIsAlreadyInUse = true;
+}
+$reader->Close();
+
+if($fEmailIsAlreadyInUse)
+{
+	$data['Error'] = 100;
+	$data['ErrorDescr'] = "Η διεύθυνση email ήδη χρησιμοποιείται!";
+	echo json_encode($data);
+	exit;
+}
+
+
 
 // Get First and Last Name
 $sql = "SELECT `FirstName`,`LastName` FROM `voter_registration_temp` WHERE `UniqueKey`=?";
@@ -34,6 +57,11 @@ $connection->Close();
 
 // Send Pin to email
 $fMailer->SendEMailVerificationPin($fEMail,$fFullname , $fRandomPin);
+
+$data['Error'] = 0;
+$data['ErrorDescr'] = $errdescr;
+echo json_encode($data);
+
 
 
 exit;

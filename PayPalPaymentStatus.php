@@ -8,28 +8,8 @@
 		exit;
 	}
 	
-	$fUniqueKey = $_GET['UniqueKey'];
+	$fStatus = $_GET['Status'];
 	
-	$fErrorCode = 0;
-	$fErrorDescription = "";
-	
-	// Check if email and mobile are verified
-	$voterInfoIsVerified = false;
-	$sql = "SELECT `EMailIsVerified`,`MobileIsVerified` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
-	$command = new MySQLCommand($connection, $sql);
-	$command->Parameters->setString(1,$fUniqueKey);
-	$reader = $command->ExecuteReader();
-	if($reader->Read())
-	{
-		$voterInfoIsVerified = ($reader->getValue(0)==1) && ($reader->getValue(1)==1);
-	}
-	$reader->Close();
-	
-	if(!$voterInfoIsVerified)
-	{
-		header('refresh: 0; url=Step2.php');
-		exit;
-	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -83,38 +63,28 @@
 	        			<br>
 	        			<br>
 	        			
-	        			Θα μεταβείτε στο PayPal...<br>
+	        			<?php
+							if($fStatus=="OK")
+							{
+								echo 'Ευχαριστούμε για την συμμετοχή σας';
+							}	        			
+							else
+							{
+								echo 'H πληρωμή σας ακυρώθηκε';
+							}
+						?>	
 	        			
-	        			ΕΔΩ ΠΡΕΠΕΙ ΝΑ ΒΑΛΟΥΜΕ ΕΝΑ ΚΕΙΜΕΝΟ ΓΙΑ ΕΝΗΜΕΡΩΣΗ ΚΤΛ.....
+	        		</div>
 	        			
-	        			</div>
 	        			
-	        			<form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post" id="PayPalForm">
-		        			<input type="hidden" name="cmd" value="_cart"/>
-							<input type="hidden" name="lang" value="en"/>
-							<input type="hidden" name="business" value="dpekloges@paypal.com"/>
-							<input type="hidden" name="upload" value="1"/>
-							
-							<input type="hidden" name="item_name_1" value="<?php echo htmlspecialchars(stripslashes('Παράβολο'));?>"/>
-							<input type="hidden" name="amount_1" value="<?php echo str_replace(",","", number_format(5,2));?>"/>
-							<input type="hidden" name="shipping_1" value="0"/>
-							<input type="hidden" name="quantity_1" value="1"/>
-							
-							<input type="hidden" name="currency_code" value="EUR"/>
-							<input type="hidden" name="rm" value="2"/>
-							<input type="hidden" name="return" value="http://registration.dpekloges.gr/PayPalPaymentStatus.php?Status=OK&UniqueKey=<?php echo $fUniqueKey;?>&t=<?php echo time();?>"/>
-							<input type="hidden" name="cancel_return" value="http://registration.dpekloges.gr/PayPalPaymentStatus.php?Status=NOK&UniqueKey=<?php echo $fUniqueKey;?>&t=<?php echo time();?>"/>
-							<input type="hidden" name="invoice" value="<?php echo $fUniqueKey;?>"/>
-							<input type="hidden" name="custom" value="<?php echo $fUniqueKey;?>"/>
-							<input type="hidden" name="bn" value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHosted"/>
-	        			</form>
+	            		
 	        		</div>
 	        	</div> 
 				<br>
 				<br>
 				<div class="row">
 					<div class="col-sm-6"><button type="button" class="btn btn-danger btn-block" onclick="ResetData();">Επιστροφή στην αρχική</button></div>
-					<div class="col-sm-6"><button type="submit" class="btn btn-success btn-block" onclick="SubmitForm();">Μετάβαση σε PayPal</button></div>
+					
 				</div> 
         </div>
     </div>

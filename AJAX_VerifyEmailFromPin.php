@@ -30,6 +30,7 @@ if($verificationPinInDB == $fPin )
 }
 else
 {
+	$connection->Close();
 	$data['Error'] = 101;
 	$data['ErrorDescr'] = 'Ο κωδικός επαλήθευσης δεν είναι σωστός!';
 	die(json_encode($data));
