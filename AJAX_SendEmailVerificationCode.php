@@ -30,9 +30,11 @@ $command->Parameters->setInteger(2, $fRandomPin);
 $command->Parameters->setString(3, $fUniqueKey);
 $command->ExecuteQuery();
 
+$connection->Close();
+
 // Send Pin to email
 $fMailer->SendEMailVerificationPin($fEMail,$fFullname , $fRandomPin);
 
-$connection->Close();
+
 exit;
 ?>
