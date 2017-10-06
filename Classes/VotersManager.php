@@ -34,22 +34,5 @@ class VotersManager
 	
 		return $reply;
     }
-    
-    public function GetVoterInfoForVisualPurposes($voterID, $lastName)
-    {
-    	$Eponymo = iconv("UTF-8", "CP1253", $lastName);
-		$url = "http://www.ypes.gr/services/eea/eeagr/result.asp";
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, "eid_ekl_ar=" . $voterID . "&Eponymo=" . $Eponymo);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$server_output = curl_exec ($ch);
-		curl_close ($ch);
-		$data = iconv("CP1253", "UTF-8", $server_output);
-		$p1 = strpos($data, '<td width="30%" class="t">Ειδ.Εκλογικός Αριθμός :</td>');
-		$p2 = strpos($data, '<!-- <tr  class="d">');
-		return '<table><colgroup><col width="500px"/><col/></colgroup><tr>' . substr($data, $p1, $p2 - $p1) . '</table>';
-    }
 }
 ?>

@@ -82,11 +82,8 @@
 	        			<br>
 	        			<br>
 	        			<br>
-	        			
-	        			Θα μεταβείτε στο PayPal...<br>
-	        			
-	        			ΕΔΩ ΠΡΕΠΕΙ ΝΑ ΒΑΛΟΥΜΕ ΕΝΑ ΚΕΙΜΕΝΟ ΓΙΑ ΕΝΗΜΕΡΩΣΗ ΚΤΛ.....
-	        			
+		        			Θα μεταβείτε στο PayPal...<br>
+		        			ΕΔΩ ΠΡΕΠΕΙ ΝΑ ΒΑΛΟΥΜΕ ΕΝΑ ΚΕΙΜΕΝΟ ΓΙΑ ΕΝΗΜΕΡΩΣΗ ΚΤΛ.....
 	        			</div>
 	        			
 	        			<form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post" id="PayPalForm">
@@ -95,7 +92,7 @@
 							<input type="hidden" name="business" value="dpekloges@paypal.com"/>
 							<input type="hidden" name="upload" value="1"/>
 							
-							<input type="hidden" name="item_name_1" value="<?php echo htmlspecialchars(stripslashes('Παράβολο'));?>"/>
+							<input type="hidden" name="item_name_1" value="Fee"/>
 							<input type="hidden" name="amount_1" value="<?php echo str_replace(",","", number_format(5,2));?>"/>
 							<input type="hidden" name="shipping_1" value="0"/>
 							<input type="hidden" name="quantity_1" value="1"/>
@@ -106,7 +103,6 @@
 							<input type="hidden" name="cancel_return" value="http://registration.dpekloges.gr/PayPalPaymentStatus.php?Status=NOK&UniqueKey=<?php echo $fUniqueKey;?>&t=<?php echo time();?>"/>
 							<input type="hidden" name="invoice" value="<?php echo $fUniqueKey;?>"/>
 							<input type="hidden" name="custom" value="<?php echo $fUniqueKey;?>"/>
-							<input type="hidden" name="bn" value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHosted"/>
 	        			</form>
 	        		</div>
 	        	</div> 

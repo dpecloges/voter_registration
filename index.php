@@ -11,11 +11,11 @@
 	require_once("Classes/TextHelper.php"); 
 	$fTextHelper = new TextHelper();
 
-	/*$fFirstName    = "ΝΙΚΟΛΑΟΣ";
+	$fFirstName    = "ΝΙΚΟΛΑΟΣ";
 	$fLastName     = "ΣΙΑΤΡΑΣ";
 	$fFathersName  = "ΚΩΝΣΤΑΝΤΙΝΟΣ";
 	$fMothersName  = "ΜΑΡΙΑ";
-	$fBirthYear    = 1986;*/
+	$fBirthYear    = 1986;
 
 	$fVoterIdFound = false;
 	if(isset($_POST['TextBoxFirstName']))
@@ -31,45 +31,64 @@
 
 		// Step 1 - Validate input data
 		$fErrorCode = 0 ;
-		if(strlen($fFirstName) < 3)
+		
+		$userInputErrosFound = false;
+		if(mb_strlen($fFirstName) < 4)
+		{
+			$fFirstNameError = "Παρακαλούμε εισάγετε έγκυρο Όνομα! (τουλάχιστον 4 χαρακτήρες)";
+			$userInputErrosFound = true;
+		}
+		
+		if(mb_strlen($fLastName) < 4)
+		{
+			$fLastNameError = "Παρακαλούμε εισάγετε έγκυρο Επώνυμο! (τουλάχιστον 4 χαρακτήρες)";
+			$userInputErrosFound = true;			
+		}
+		
+		if(mb_strlen($fFathersName) < 3)
+		{
+			$fFathersNameError = "Παρακαλούμε εισάγετε το Πατρώνυμο σας!";
+			$userInputErrosFound = true;			
+		}
+		
+		if(mb_strlen($fMothersName) < 3)
+		{
+			$fMothersNameError = "Παρακαλούμε εισάγετε το Όνομα της Μητέρας σας!";
+			$userInputErrosFound = true;			
+		}
+		
+		if($userInputErrosFound )		
 		{
 			$fErrorCode = 101;
-			$fErrorDescription = 'Δεν έχετε συμπληρώσει το όνομα σας!';
+			$fErrorDescription = 'Παρακαλούμε ελέγξτε αν τα στοιχεία που έχετε εισάγει<br>είναι ίδια με αυτά της αστυνομικής σας ταυτότητας';
 		}
-		elseif(strlen($fLastName) < 3)
+		else
 		{
-			$fErrorCode = 102;
-			$fErrorDescription = 'Δεν έχετε συμπληρώσει το επώνυμο σας!';
-		}
-		elseif(strlen($fFathersName) < 3)
-		{
-			$fErrorCode = 103;
-			$fErrorDescription = 'Δεν έχετε συμπληρώσει το πατρώνυμο σας!';
-		}
-		elseif(!$fTextHelper->CheckIfStringContainsOnlyGreekCapitalCharacters($fFirstName ))
-		{
-			$fErrorCode = 104;
-			$fErrorDescription = 'Το όνομα σας περιέχει λατινικούς ή ειδικούς χαρακτήρες!';
-		}
-		elseif(!$fTextHelper->CheckIfStringContainsOnlyGreekCapitalCharacters($fLastName ))
-		{
-			$fErrorCode = 105;
-			$fErrorDescription = 'Το επώνυμο σας περιέχει λατινικούς ή ειδικούς χαρακτήρες!';
-		}
-		elseif(!$fTextHelper->CheckIfStringContainsOnlyGreekCapitalCharacters($fFathersName ))
-		{
-			$fErrorCode = 106;
-			$fErrorDescription = 'Το πατρώνυμο σας περιέχει λατινικούς ή ειδικούς χαρακτήρες!';
-		}
-		elseif($fBirthYear<1900)
-		{
-			$fErrorCode = 107;
-			$fErrorDescription = 'Δεν έχετε συμπληρώσει το έτος γέννησης σας!';
-		}
-		elseif(!$fCaptchaIsVerified )
-		{
-			$fErrorCode = 108;
-			$fErrorDescription = 'Δεν έχετε επαληθέυσει τον κωδικό ασφαλείας!';
+			if(!$fTextHelper->CheckIfStringContainsOnlyGreekCapitalCharacters($fFirstName ))
+			{
+				$fErrorCode = 104;
+				$fErrorDescription = 'Το όνομα σας περιέχει λατινικούς ή ειδικούς χαρακτήρες!';
+			}
+			elseif(!$fTextHelper->CheckIfStringContainsOnlyGreekCapitalCharacters($fLastName ))
+			{
+				$fErrorCode = 105;
+				$fErrorDescription = 'Το επώνυμο σας περιέχει λατινικούς ή ειδικούς χαρακτήρες!';
+			}
+			elseif(!$fTextHelper->CheckIfStringContainsOnlyGreekCapitalCharacters($fFathersName ))
+			{
+				$fErrorCode = 106;
+				$fErrorDescription = 'Το πατρώνυμο σας περιέχει λατινικούς ή ειδικούς χαρακτήρες!';
+			}
+			elseif($fBirthYear<1900)
+			{
+				$fErrorCode = 107;
+				$fErrorDescription = 'Δεν έχετε συμπληρώσει το έτος γέννησης σας!';
+			}
+			elseif(!$fCaptchaIsVerified)
+			{
+				$fErrorCode = 108;
+				$fErrorDescription = 'Δεν έχετε επαληθέυσει τον κωδικό ασφαλείας!';
+			}
 		}
 
 		
@@ -80,10 +99,13 @@
 			$fVoterData = $fVotersManager->GetVoterData($fFirstName, $fLastName, $fFathersName,$fMothersName, $fBirthYear);
 			$fVoterID = $fVoterData->Eid_ekl_ar;
 			
-			$fFirstName = $fVoterData->Onoma;
-			$fLastName = $fVoterData->Eponymo;
-			$fFathersName = $fVoterData->on_pat;
-			$fMothersName = $fVoterData->on_mht;
+			if( $fVoterData->Onoma!="" &&  $fVoterData->Onoma!=null)
+			{
+				$fFirstName = $fVoterData->Onoma;
+				$fLastName = $fVoterData->Eponymo;
+				$fFathersName = $fVoterData->on_pat;
+				$fMothersName = $fVoterData->on_mht;
+			}
 			
 			$fArithmosDimotologiou = $fVoterData->dhmot;
 			$fDhmos = $fVoterData->Dimos;
@@ -123,7 +145,7 @@
 			{
 				$fVoterIdFound = false;
 				$fErrorCode = 110;
-				$fErrorDescription = 'Ο Ειδικός Εκλογικός Αριθμός δεν βρέθηκε!<br/>Παρακαλούμε ελέγξτε τα στοιχεία που έχετε εισάγει.';
+				$fErrorDescription = 'Ο Ειδικός Εκλογικός Αριθμός δεν βρέθηκε!<br/>Παρακαλούμε ελέγξτε αν τα στοιχεία που έχετε εισάγει<br>είναι ίδια με αυτά της αστυνομικής σας ταυτότητας';
 			}
 		}
 	}
@@ -194,18 +216,22 @@
 <body>
     <div class="register-photo" style="background-color:white!important;">
         <div class="form-container">
-            <form method="post" action="index.php" id="RegistrationForm">
+            <form method="post" action="" id="RegistrationForm">
                 <div class="form-group">
                     <input class="form-control" type="text" placeholder="* Όνομα" name="TextBoxFirstName" id="TextBoxFirstName" value="<?php echo $fFirstName;?>" maxlength="30" />
+                	<small class="help-block" style="color:red;"><?php echo $fFirstNameError;?></small>
                 </div>
                 <div class="form-group">
                     <input class="form-control" type="text" placeholder="* Επώνυμο" name="TextBoxLastName" id="TextBoxLastName" value="<?php echo $fLastName;?>" maxlength="30" />
+                	<small class="help-block" style="color:red;"><?php echo $fLastNameError;?></small>
                 </div>
                 <div class="form-group"> 
                     <input class="form-control" type="text" placeholder="* Πατρώνυμο" name="TextBoxFathersName" id="TextBoxFathersName" value="<?php echo $fFathersName;?>" maxlength="30" />
+                	<small class="help-block" style="color:red;"><?php echo $fFathersNameError;?></small>
                 </div>
                 <div class="form-group"> 
                     <input class="form-control" type="text" placeholder="* Ονομα Μητέρας" name="TextBoxMothersName" id="TextBoxMothersName" value="<?php echo $fMothersName;?>" maxlength="30" />
+                	<small class="help-block" style="color:red;"><?php echo $fMothersNameError;?></small>
                 </div>
                 
                  <div class="form-group"> 

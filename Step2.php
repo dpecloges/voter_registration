@@ -5,6 +5,8 @@
 	require_once("Classes/GoogleReCaptcha.php"); 
 	$fGoogleReCaptcha = new GoogleReCaptcha();
 	
+	
+	
 	if(!isset($_GET['UniqueKey']))
 	{
 		header('refresh: 0; url=index.php');
@@ -23,16 +25,23 @@
 		$fPhone = $_POST['TextBoxTelephone'];
 		$fStreet = trim($_POST['TextBoxStreetName']);
 		$fStreetNo = trim($_POST['TextBoxStreetNumber']);
+		$fArea = trim($_POST['TextBoxArea']);
 		$fZip = trim($_POST['TextBoxZipCode']);
 		$fMunicipality = trim($_POST['TextBoxMunicipality']);
 		$fCounty = trim($_POST['TextBoxDivision']);
 		
 		$addressIsValid = false;
-		if($fStreet!="" && $fStreetNo!="" && $fZip !="" &&$fMunicipality !="")
+		
+		if(isset($_POST['NoNumbersAddress']))
 		{
-			$addressIsValid = true;
+			$addressIsValid = $fStreet!="" && $fZip !="" && $fMunicipality !="";
 		}
 		else
+		{
+			$addressIsValid = $fStreet!="" && $fStreetNo!="" && $fZip !="" && $fMunicipality !="";
+		}
+		
+		if(!$addressIsValid)
 		{
 			$fErrorCode = 101;
 			$fErrorDescription = 'Δεν έχετε εισάγει την Διεύθυνση κατοικίας σας !';
@@ -150,7 +159,7 @@
     <script src="assets/dist/js/language/el_GR.js"></script>   
     
     <!-- Google Map Scripts -->
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?php echo Google_Map_API_KEY;?>&libraries=places&language=el&callback=InitAddressAutoComplete"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?php echo My_Google_API_Key;?>&libraries=places&language=el&callback=InitAddressAutoComplete"></script>
     <script type="text/javascript" src="js/StepFormsJS/Step2_GoogleMap.js"></script>
     <!--------------------------->
     
@@ -213,6 +222,10 @@
 				$('#TextBoxStreetNumber').removeAttr("readonly");
 				$('#TextBoxStreetNumber').css('background-color', '');
 				
+				$('#TextBoxArea').removeAttr("readonly");
+				$('#TextBoxArea').css('background-color', '');
+
+				
 				$('#TextBoxZipCode').removeAttr("readonly");
 				$('#TextBoxZipCode').css('background-color', '');
 				
@@ -237,6 +250,10 @@
 				
 				$('#TextBoxStreetNumber').attr('readonly', 'readonly');
 				$('#TextBoxStreetNumber').css('background-color', '#fffdf3');
+				
+				$('#TextBoxArea').attr('readonly', 'readonly');
+				$('#TextBoxArea').css('background-color', '#fffdf3');
+
 				
 				$('#TextBoxZipCode').attr('readonly', 'readonly');
 				$('#TextBoxZipCode').css('background-color', '#fffdf3');
@@ -327,6 +344,8 @@
 		   	 		$("#ErrorMsgEmail").html(data.ErrorDescr);
 					$('#ErrorMsgEmail').show();
 					$('#MobilePIN').focus();
+					$('#ErrorMsgEmail').hide();
+
 		   	 	}
 			});	
 		}
@@ -339,8 +358,8 @@
 		
 		function OpeMobileVerificationForm()
 		{
-			$mobileNo = $('#TextBoxMobile').val();
-			if($mobileNo.length<10)
+			var mobileNo = $('#TextBoxMobile').val();
+			if(mobileNo.length<10 || mobileNo .substring(0, 2)!="69")
 			{
 				$('#mobileError').html("Το πεδίο κινητό τηλέφωνο είναι υποχρεωτικό!");
 			}
@@ -396,6 +415,7 @@
 					$('#MobileModal').modal('hide');	
 					$('#ButtonCheckMobile').text("Επαληθεύτηκε");
 					$("#ButtonCheckMobile").attr("disabled", true);
+					$('#mobileError').hide();
 		   	 	}
 		   	 	else
 		   	 	{
@@ -457,7 +477,7 @@
 						<button type="button" class="btn btn-default" <?php if($fMobileIsVerified ==1){?>disabled="disabled"<?php }?> id="ButtonCheckMobile" onclick="OpeMobileVerificationForm();"><?php echo $fVerifyMobileButtonLabel;?></button>
 						<br/><br/><br/>
 		                <div class="form-group">
-		                    <input type="tel" class="form-control" placeholder="Τηλέφωνο σταθερό" name="TextBoxTelephone" id="TextBoxTelephone" maxlength="10" value="<?php echo $fPhone;?>" />
+		                    <input type="tel" style="visibility:collapse;" class="form-control" placeholder="Τηλέφωνο σταθερό" name="TextBoxTelephone" id="TextBoxTelephone" maxlength="10" value="<?php echo $fPhone;?>" />
 		                </div>            			
             		</div>
             		<div class="col-sm-6">
@@ -473,12 +493,12 @@
 		        <div class="row">		        	
 		        	<div class="col-sm-6">
 		        		<div class="checkbox">
-				  			<label><input type="checkbox" id="CustomAddress" onclick="CustomAddressClick();" value="">Θέλω να εισάγω μόνος μου την διεύθυνση. (Απαιτείται να γνωρίζετε τον ΤΚ)</label>
+				  			<label><input type="checkbox" name="CustomAddress" <?php if(isset($_POST['CustomAddress'])){?> checked="checked"<?php }?> id="CustomAddress" onclick="CustomAddressClick();" value="">Καταχώριση διεύθυνσης χωρίς Google Maps</label>
 		        		</div>
 					</div>
 		        	<div class="col-sm-6">
 				        <div class="checkbox">
-						  <label><input type="checkbox" id="NoNumbersAddress" onclick="NoNumbersAddressClick();" value="">Δεν υπάρχει αρίθμηση στην διεύθυνση μου</label>
+						  <label><input type="checkbox" name="NoNumbersAddress" <?php if(isset($_POST['NoNumbersAddress'])){?> checked="checked"<?php }?> id="NoNumbersAddress" onclick="NoNumbersAddressClick();" value="">Δεν υπάρχει αρίθμηση στην διεύθυνση μου</label>
 						</div>
 				    </div>
 		        </div>
@@ -486,8 +506,10 @@
 		        <div id="ErrorMsgAddress" class="alert alert-danger" style=""></div>		        
             	<div class="row">
             		<div class="form-group">
-            			<div class="col-sm-8"><input type="text" class="form-control" name="TextBoxStreetName" id="TextBoxStreetName" name="StreetName" placeholder="Οδός" style="background-color:#fffdf3" value="<?php echo $fStreet;?>" /></div>
+            			<div class="col-sm-6">
+							<input type="text" class="form-control" name="TextBoxStreetName" id="TextBoxStreetName" name="StreetName" placeholder="Οδός" style="background-color:#fffdf3;" value="<?php echo $fStreet;?>" /></div>
 	            		<div class="col-sm-2"><input type="text" class="form-control" name="TextBoxStreetNumber" id="TextBoxStreetNumber" placeholder="Αριθμός" style="background-color:#fffdf3" value="<?php echo $fStreetNo;?>" /></div>	
+	            		<div class="col-sm-2"><input type="text" class="form-control" name="TextBoxArea" id="TextBoxArea" placeholder="Περιοχή" style="background-color:#fffdf3" value="<?php echo $fArea;?>" /></div>	
 	            		<div class="col-sm-2"><input type="text" class="form-control" name="TextBoxZipCode" id="TextBoxZipCode" placeholder="Τ.Κ." style="background-color:#fffdf3" value="<?php echo $fZip;?>"  /></div>
             		</div>
             	</div> 

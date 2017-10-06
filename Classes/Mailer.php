@@ -1,5 +1,5 @@
 <?php
-require_once("Config.php");
+require_once("lib/config/config.php");
 require_once("Mandrill/Mandrill.php");
 
 class Mailer
@@ -30,8 +30,8 @@ class Mailer
 				'html' => $body,
 				'text' => 'Δεν υποστηρίζεται!',
 				'subject' => $subject,
-				'from_email' => System_Email,
-				'from_name' => System_Email_Name,
+				'from_email' => My_Admin_Email,
+				'from_name' => My_Platform_Email_Name,
 				'to' => array(
 					array(
 						'email' => $email,
@@ -39,7 +39,7 @@ class Mailer
 						'type' => 'to'
 					)
 				),
-				'headers' => array('Reply-To' => System_Email),
+				'headers' => array('Reply-To' => My_Admin_Email),
 				'important' => false,
 				'track_opens' => null,
 				'track_clicks' => null,

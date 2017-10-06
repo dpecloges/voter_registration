@@ -25,7 +25,7 @@ if($reader->Read())
 }
 $reader->Close();
 
-if($fMobileIsAlreadyRegistered)
+if($fMobileIsAlreadyRegistered )
 {
 	$connection->Close();
 	$data['Error'] = 100;

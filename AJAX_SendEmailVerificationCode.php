@@ -63,6 +63,5 @@ $data['ErrorDescr'] = $errdescr;
 echo json_encode($data);
 
 
-
 exit;
 ?>
