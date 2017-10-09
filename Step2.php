@@ -27,11 +27,21 @@
 		$fStreetNo = trim($_POST['TextBoxStreetNumber']);
 		$fArea = trim($_POST['TextBoxArea']);
 		$fZip = trim($_POST['TextBoxZipCode']);
-		$fMunicipality = trim($_POST['TextBoxMunicipality']);
+		
+		$fMunicipalityID = intval($_POST['ComboBoxMunicipality']);
+		$sql = "SELECT `KOD_DHM`,`ONOMA` FROM `YPES_DHMOI` WHERE `KOD_DHM`=".$fMunicipalityID;
+		$command = new MySqlCommand($connection,$sql);
+		$reader = $command->ExecuteReader();
+		while($reader->Read())
+		{
+			$fMunicipality = $reader->getValue(1);
+		}
+		$reader->Close();
+		
 		$fCounty = trim($_POST['TextBoxDivision']);
 		
 		$addressIsValid = false;
-		
+				
 		if(isset($_POST['NoNumbersAddress']))
 		{
 			$addressIsValid = $fStreet!="" && $fZip !="" && $fMunicipality !="";
@@ -158,17 +168,45 @@
     <script src="assets/dist/js/framework/bootstrap.min.js"></script>
     <script src="assets/dist/js/language/el_GR.js"></script>   
     
+    <script type="text/javascript" src="js/StepFormsJS/TextFunctions.js?ID=<?php echo time();?>"></script>
+
+    
     <!-- Google Map Scripts -->
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?php echo My_Google_API_Key;?>&libraries=places&language=el&callback=InitAddressAutoComplete"></script>
-    <script type="text/javascript" src="js/StepFormsJS/Step2_GoogleMap.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?php echo My_Google_API_Key;?>&libraries=places&language=el"></script>
+    <script type="text/javascript" src="js/StepFormsJS/Step2_GoogleMap.js?ID=<?php echo time();?>"></script>
     <!--------------------------->
     
 	<script type="text/javascript">
+		
 		$(document).ready(function() {
 			PreventFormSubmitOnEnterButtonHit();
-			$('#ErrorMsgAddress').hide();
-			CustomAddressClick();
 			
+			InitGoogleMap();
+			ShowAddressOnMapAccordingToUserInput()
+			
+			$('#TextBoxStreetName')[0].oninput = function(){
+				FixTextInputToUpperCaseGreek($('#TextBoxStreetName'));
+				ShowAddressOnMapAccordingToUserInput();
+	     	};
+	     	
+	     	$('#TextBoxStreetNumber')[0].oninput = function(){
+				FixTextInputToNumbersOnly($('#TextBoxStreetNumber'));
+				ShowAddressOnMapAccordingToUserInput();
+	     	};
+	     	
+	     	$('#TextBoxZipCode')[0].oninput = function(){
+				FixTextInputToNumbersOnly($('#TextBoxZipCode'));
+				ShowAddressOnMapAccordingToUserInput();
+	     	};
+
+	    	$('#TextBoxArea')[0].oninput = function(){
+				FixTextInputToUpperCaseGreek($('#TextBoxArea'));
+				ShowAddressOnMapAccordingToUserInput();
+	     	};
+	     	
+
+			$('#ErrorMsgAddress').hide();
+		
 			<?php
 				if($fErrorCode>0)
 				{
@@ -179,6 +217,26 @@
 				}
 			?>
 		});
+		
+		function ShowAddressOnMapAccordingToUserInput()
+		{
+			if($("#NoNumbersAddress").is(':checked'))
+			{
+				if($('#TextBoxStreetName').val()!="" &&  $('#TextBoxZipCode').val()!="" && $('#TextBoxZipCode').val().length>4)
+				{
+					var address = $('#TextBoxStreetName').val()+ ' ' + $('#TextBoxStreetNumber').val() +"," +  $('#TextBoxZipCode').val() +",Greece";
+					ShowAddressOnGoogleMap(address);
+				}
+			}
+			else
+			{
+				if($('#TextBoxStreetName').val()!="" && $('#TextBoxStreetNumber').val() !="" &&  $('#TextBoxZipCode').val()!="" && $('#TextBoxZipCode').val().length>4)
+				{
+					var address = $('#TextBoxStreetName').val()+ ' ' + $('#TextBoxStreetNumber').val() +"," +  $('#TextBoxZipCode').val() +",Greece";
+					ShowAddressOnGoogleMap(address);
+				}
+			}
+		}
 		
 		function PreventFormSubmitOnEnterButtonHit()
 		{
@@ -196,72 +254,14 @@
       	function GetCountyFromMunicipality()
 		{
 			var municipality = $('#ComboBoxMunicipality').val();
-			$('#TextBoxMunicipality').val($('#ComboBoxMunicipality option:selected').text());
 			$.post('AJAX_GetCountyFromMunicipality.php', {Municipality:municipality }, 
 				function(data){
 					$("#TextBoxDivision").val(data);
+					ShowAddressOnMap();
 				});	
 		}
 
-		function CustomAddressClick()
-		{
-			if($("#CustomAddress").is(':checked'))		
-			{
-				$('#TextBoxAddress').attr('readonly', 'readonly');
-				$('#TextBoxAddress').css('background-color', '#fffdf3');
-				
-				$("#NoNumbersAddress").attr('read-only','');
-				
-				$('#TextBoxMunicipality').hide();
-				$('#ComboBoxMunicipality').show();
-
-				
-				$('#TextBoxStreetName').removeAttr("readonly");
-				$('#TextBoxStreetName').css('background-color', '');
-				
-				$('#TextBoxStreetNumber').removeAttr("readonly");
-				$('#TextBoxStreetNumber').css('background-color', '');
-				
-				$('#TextBoxArea').removeAttr("readonly");
-				$('#TextBoxArea').css('background-color', '');
-
-				
-				$('#TextBoxZipCode').removeAttr("readonly");
-				$('#TextBoxZipCode').css('background-color', '');
-				
-				$('#TextBoxMunicipality').removeAttr("readonly");
-				$('#TextBoxMunicipality').css('background-color', '');
-						
-				NoNumbersAddressClick();
-			}	
-			else
-			{
-				$('#TextBoxAddress').removeAttr("readonly");				
-				$('#TextBoxAddress').css('background-color', '');
-				
-				$("#NoNumbersAddress").attr('read-only', 'read-only');
-				
-				$('#TextBoxMunicipality').show();
-				$('#ComboBoxMunicipality').hide();
-
-				
-				$('#TextBoxStreetName').attr('readonly', 'readonly');
-				$('#TextBoxStreetName').css('background-color', '#fffdf3');
-				
-				$('#TextBoxStreetNumber').attr('readonly', 'readonly');
-				$('#TextBoxStreetNumber').css('background-color', '#fffdf3');
-				
-				$('#TextBoxArea').attr('readonly', 'readonly');
-				$('#TextBoxArea').css('background-color', '#fffdf3');
-
-				
-				$('#TextBoxZipCode').attr('readonly', 'readonly');
-				$('#TextBoxZipCode').css('background-color', '#fffdf3');
-				
-				$('#TextBoxMunicipality').attr('readonly', 'readonly');
-				$('#TextBoxMunicipality').css('background-color', '#fffdf3');
-			}
-		}
+		
 	    
 	    
 	    function NoNumbersAddressClick()
@@ -485,39 +485,43 @@
             			<div id="infowindow-content">
 						  <span id="place-address"></span>
 						</div>
-            			
             		</div>
-            	</div>         	
-            	<br/><br/>            
-		        <input type="text" class="form-control" placeholder="* Διεύθυνση κατοικίας" id="TextBoxAddress" name="TextBoxAddress" maxlength="100" value="<?php echo $_POST['TextBoxAddress'];?>" />
-		        <div class="row">		        	
-		        	<div class="col-sm-6">
-		        		<div class="checkbox">
-				  			<label><input type="checkbox" name="CustomAddress" <?php if(isset($_POST['CustomAddress'])){?> checked="checked"<?php }?> id="CustomAddress" onclick="CustomAddressClick();" value="">Καταχώριση διεύθυνσης χωρίς Google Maps</label>
-		        		</div>
-					</div>
-		        	<div class="col-sm-6">
-				        <div class="checkbox">
-						  <label><input type="checkbox" name="NoNumbersAddress" <?php if(isset($_POST['NoNumbersAddress'])){?> checked="checked"<?php }?> id="NoNumbersAddress" onclick="NoNumbersAddressClick();" value="">Δεν υπάρχει αρίθμηση στην διεύθυνση μου</label>
-						</div>
-				    </div>
-		        </div>
+            	</div>         		      
 		        <br/>
 		        <div id="ErrorMsgAddress" class="alert alert-danger" style=""></div>		        
             	<div class="row">
             		<div class="form-group">
             			<div class="col-sm-6">
-							<input type="text" class="form-control" name="TextBoxStreetName" id="TextBoxStreetName" name="StreetName" placeholder="Οδός" style="background-color:#fffdf3;" value="<?php echo $fStreet;?>" /></div>
-	            		<div class="col-sm-2"><input type="text" class="form-control" name="TextBoxStreetNumber" id="TextBoxStreetNumber" placeholder="Αριθμός" style="background-color:#fffdf3" value="<?php echo $fStreetNo;?>" /></div>	
-	            		<div class="col-sm-2"><input type="text" class="form-control" name="TextBoxArea" id="TextBoxArea" placeholder="Περιοχή" style="background-color:#fffdf3" value="<?php echo $fArea;?>" /></div>	
-	            		<div class="col-sm-2"><input type="text" class="form-control" name="TextBoxZipCode" id="TextBoxZipCode" placeholder="Τ.Κ." style="background-color:#fffdf3" value="<?php echo $fZip;?>"  /></div>
+							<input type="text" autocomplete="off"  class="form-control" name="TextBoxStreetName" id="TextBoxStreetName" name="StreetName" placeholder="Οδός"  value="<?php echo $fStreet;?>" />
+						</div>
+						
+	            		<div class="col-sm-2">
+	            			<input type="text" autocomplete="off"  class="form-control" name="TextBoxStreetNumber" id="TextBoxStreetNumber" placeholder="Αριθμός"  value="<?php echo $fStreetNo;?>" />
+	            		</div>	
+
+	            		<div class="col-sm-2">
+	            			<input type="text" autocomplete="off"  class="form-control" name="TextBoxArea" id="TextBoxArea" placeholder="Περιοχή"  value="<?php echo $fArea;?>" />
+	            		</div>	
+	            		<div class="col-sm-2">
+	            			<input type="text" autocomplete="off"  class="form-control" name="TextBoxZipCode" id="TextBoxZipCode" placeholder="Τ.Κ." value="<?php echo $fZip;?>"  />
+	            		</div>
             		</div>
             	</div> 
+            	<div class="row">
+            		<div class="col-sm-6">&nbsp;</div>
+            		<div class="col-sm-6">
+	            		<div class="checkbox">
+						  <label><input type="checkbox" name="NoNumbersAddress" <?php if(isset($_POST['NoNumbersAddress'])){?> checked="checked"<?php }?> id="NoNumbersAddress" onclick="NoNumbersAddressClick();" value="">Δεν υπάρχει αρίθμηση στην διεύθυνση μου</label>
+						</div>
+            		</div>
+
+            	</div>
+            	
+            	
             	<br/>
             	<div class="row">
             		<div class="col-sm-6">
-            		<input type="text" class="form-control" name="TextBoxMunicipality" id="TextBoxMunicipality" placeholder="Δήμος" style="background-color:#fffdf3" value="<?php echo $fMunicipality;?>"  />
-            		<select class="form-control" placeholder="Δήμος" name="ComboBoxMunicipality" id="ComboBoxMunicipality" style="background-color:#fffdf3" onchange="GetCountyFromMunicipality();">
+            		<select class="form-control" placeholder="Δήμος" name="ComboBoxMunicipality" id="ComboBoxMunicipality"  onchange="GetCountyFromMunicipality();">
 						<option value="0" disabled selected>Δήμος</option>
 						
 						<?php
@@ -527,7 +531,7 @@
 							while($reader->Read())
 							{
 								$selected = "";
-								if($_POST['ComboBoxMunicipality'] == $reader->getValue(0))
+								if($fMunicipalityID == $reader->getValue(0))
 								{
 									$selected ='selected="selected"';
 								}
@@ -537,11 +541,9 @@
 							}
 							$reader->Close();
 						?>
-						
-					</select>
-       		
+					</select>      		
             		</div>	
-            		<div class="col-sm-6"><input type="text" class="form-control" name="TextBoxDivision" id="TextBoxDivision" placeholder="Νομός / Τομέας" style="background-color:#fffdf3" value="<?php echo $fCounty;?>" /></div>
+            		<div class="col-sm-6"><input type="text" class="form-control" name="TextBoxDivision" id="TextBoxDivision" placeholder="Νομός / Τομέας" readonly="readonly" style="background-color:#fffdf3;" value="<?php echo $fCounty;?>" /></div>
 		        </div>
                 <br/><br/>
                 
@@ -646,7 +648,6 @@
                 <td align="center">
                   <p id="SendMobileMsg">Θα λάβετε κωδικό επαλήθευσης στο κινητό σας.<br /><br />
                   Παρακαλούμε πατήστε «<strong>Επαλήθευση μέσω SMS</strong>»<br/>
-                  ή «<strong>Επαλήθευση μέσω φωνητικής κλήσης</strong>»<br/>
                   και στην συνέχεια εισάγετε τον κωδικό που θα παραλάβατε.</p>
                   <div id="SendMobileDiv">
                   	Εισάγετε τον κωδικό επαλήθευσης που λάβατε στο<br/>
@@ -663,8 +664,8 @@
           </table>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-info" id="ButtonSendSMSVerificationPin" onclick="SendMobileSMSVerificationPin();" >Επαλήθευση μέσω SMS</button>
-          <button type="button" class="btn btn-warning" id="ButtonSendVoiceVerificationPin" onclick="SendMobileVerificationVoiceMessage();">Επαλήθευση μέσω φωνητικής κλήσης</button>
+		  <button type="button" class="btn btn-warning"  id="ButtonSendVoiceVerificationPin" style="visibility:collapse" onclick="SendMobileVerificationVoiceMessage();">Επαλήθευση μέσω φωνητικής κλήσης</button>       
+   		  <button type="button" class="btn btn-info" id="ButtonSendSMSVerificationPin" onclick="SendMobileSMSVerificationPin();" >Επαλήθευση μέσω SMS</button>
           <button type="button" class="btn btn-default" id="ButtonVerifyMobileCancel" onclick="CancelMobileVerification();">Κλείσιμο</button>
           <button type="button" class="btn btn-success" onclick="VerifyMobileFromPin();" id="ButtonCheckMobilePin">Επαλήθευση</button>
         </div>

@@ -1,19 +1,33 @@
-<?php  
- 	require_once("../Classes/DBConnection.php");
+<?php
+	require_once("../Classes/DBConnection.php");
 
-	//require_once("../Classes/Mailer.php");
- 	//$fMailer = new Mailer();
+	$fVivaAPIURL = "http://demo.vivapayments.com";
+    $fVivaWebHookAuthURL  = "/api/messages/config/token";
+    
+    // Your merchant ID and API Key can be found in the 'Security' settings on your profile.
+	$fMerchantId = 'f8e9b647-9676-40e6-ba54-38030689d1ce';
+	$fAPIKey = '=14=.|'; 	
 
-	$fUniqueKey = $_POST['invoice'];
-	$fPayPalParameters = "";
-	try
-	{
-		foreach ($_POST as $param_name => $param_val) { $fPayPalParameters .= $param_name ."=". $param_val."\n"; }
-	}
-	catch(Exception $ex)
-	{
-	}
 	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// Receive the Webhook Authorization Code
+	///////////////////////////////////////////////////////////////////////////////////////
+	$fWebHookAuthorizationCodeURL = $fVivaAPIURL . $fVivaWebHookAuthURL;
+	$opts = array(
+	  'http'=>array(
+	    'method'=>"GET",
+	    'header' => "Authorization: Basic " . base64_encode($fMerchantId.":".$fAPIKey)                 
+	  )
+	);
+	$context = stream_context_create($opts);
+	$fWebhookAuthorizationData = file_get_contents($fWebHookAuthorizationCodeURL, false, $context);
+	echo $fWebhookAuthorizationData;
+	///////////////////////////////////////////////////////////////////////////////////////
+	
+	$data = json_decode(file_get_contents('php://input'), true); 
+	$orderID = $data['EventData']['OrderCode'];
+	
+	//$cardCountryCode = $data['EventData']['CardCountryCode'];
 	
 	$sql = 'INSERT INTO `voter_registration` (
 							voter_registration.UniqueKey,
@@ -73,15 +87,15 @@
 							voter_registration_temp.Municipality,
 							voter_registration_temp.County,
 							?									
-		FROM `voter_registration_temp` WHERE voter_registration_temp.UniqueKey=?';
+		FROM `voter_registration_temp` WHERE voter_registration_temp.VivaOrderID=?';
 		$command = new MySqlCommand($connection, $sql);
-		$command->Parameters->setString(1,$fPayPalParameters);
-		$command->Parameters->setString(2,$fUniqueKey);
+		$command->Parameters->setString(1,json_encode($data));
+		$command->Parameters->setInteger(2,$orderID);
 		$command->ExecuteQuery();
-		
+
 		// Delete temp record
-		$sql = "DELETE FROM `voter_registration_temp` WHERE `UniqueKey`=?";
+		$sql = "DELETE FROM `voter_registration_temp` WHERE `VivaOrderID`=?";
 		$command = new MySqlCommand($connection, $sql);
-		$command->Parameters->setString(1,$fUniqueKey);
+		$command->Parameters->setInteger(1,$orderID);
 		$command->ExecuteQuery();	
 ?>

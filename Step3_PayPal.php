@@ -82,13 +82,27 @@
 	        			<br>
 	        			<br>
 	        			<br>
-		        			Θα μεταβείτε στη 
-							Viva...<br>
+		        			Θα μεταβείτε στο PayPal...<br>
 		        			ΕΔΩ ΠΡΕΠΕΙ ΝΑ ΒΑΛΟΥΜΕ ΕΝΑ ΚΕΙΜΕΝΟ ΓΙΑ ΕΝΗΜΕΡΩΣΗ ΚΤΛ.....
 	        			</div>
 	        			
-	        			<form action="Step3_GoToViva.php" method="post" id="PayPalForm">
-							<input type="hidden" name="invoiceID" value="<?php echo $fUniqueKey;?>"/>
+	        			<form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post" id="PayPalForm">
+		        			<input type="hidden" name="cmd" value="_cart"/>
+							<input type="hidden" name="lang" value="en"/>
+							<input type="hidden" name="business" value="dpekloges@paypal.com"/>
+							<input type="hidden" name="upload" value="1"/>
+							
+							<input type="hidden" name="item_name_1" value="Fee"/>
+							<input type="hidden" name="amount_1" value="<?php echo str_replace(",","", number_format(5,2));?>"/>
+							<input type="hidden" name="shipping_1" value="0"/>
+							<input type="hidden" name="quantity_1" value="1"/>
+							
+							<input type="hidden" name="currency_code" value="EUR"/>
+							<input type="hidden" name="rm" value="2"/>
+							<input type="hidden" name="return" value="http://registration.dpekloges.gr/PayPalPaymentStatus.php?Status=OK&UniqueKey=<?php echo $fUniqueKey;?>&t=<?php echo time();?>"/>
+							<input type="hidden" name="cancel_return" value="http://registration.dpekloges.gr/PayPalPaymentStatus.php?Status=NOK&UniqueKey=<?php echo $fUniqueKey;?>&t=<?php echo time();?>"/>
+							<input type="hidden" name="invoice" value="<?php echo $fUniqueKey;?>"/>
+							<input type="hidden" name="custom" value="<?php echo $fUniqueKey;?>"/>
 	        			</form>
 	        		</div>
 	        	</div> 
@@ -96,7 +110,7 @@
 				<br>
 				<div class="row">
 					<div class="col-sm-6"><button type="button" class="btn btn-danger btn-block" onclick="ResetData();">Επιστροφή στην αρχική</button></div>
-					<div class="col-sm-6"><button type="submit" class="btn btn-success btn-block" onclick="SubmitForm();">Μετάβαση σε Viva</button></div>
+					<div class="col-sm-6"><button type="submit" class="btn btn-success btn-block" onclick="SubmitForm();">Μετάβαση σε PayPal</button></div>
 				</div> 
         </div>
     </div>

@@ -1,6 +1,11 @@
 <?php
-require_once("lib/config/config.php");
+if(file_Exists("lib/config/config.php"))
+{
+
+	require_once("lib/config/config.php");
+}
 require_once("Mandrill/Mandrill.php");
+
 
 class Mailer
 {

@@ -11,11 +11,11 @@
 	require_once("Classes/TextHelper.php"); 
 	$fTextHelper = new TextHelper();
 
-	/*$fFirstName    = "ΝΙΚΟΛΑΟΣ";
+	$fFirstName    = "ΝΙΚΟΛΑΟΣ";
 	$fLastName     = "ΣΙΑΤΡΑΣ";
 	$fFathersName  = "ΚΩΝΣΤΑΝΤΙΝΟΣ";
 	$fMothersName  = "ΜΑΡΙΑ";
-	$fBirthYear    = 1986;*/
+	$fBirthYear    = 1986;
 
 	$fVoterIdFound = false;
 	if(isset($_POST['TextBoxFirstName']))
@@ -166,7 +166,6 @@
 			}
 			else
 			{
-				$fCaptchaIsVerified = false;
 				$fVoterIdFound = false;
 				$fErrorCode = 110;
 				$fErrorDescription = 'Ο Ειδικός Εκλογικός Αριθμός δεν βρέθηκε!<br/>Παρακαλούμε ελέγξτε αν τα στοιχεία που έχετε εισάγει<br>είναι ίδια με αυτά της αστυνομικής σας ταυτότητας';
@@ -176,11 +175,6 @@
 	else
 	{
 		session_destroy();
-	}
-	
-	if($fErrorCode>0)
-	{
-		$fCaptchaIsVerified = false;
 	}
 	
 	$connection->Close();

@@ -12,7 +12,7 @@ class VotersManager
 		$PName = $fathersName;//iconv("UTF-8", "CP1253", $fathersName);
 		$MName = $mothersName;//iconv("UTF-8", "CP1253", $mothersName);
 
-		$url = "http://catalog.dpekloges.gr/find_catalog_data_strict.php";
+		$url = "https://catalog.dpekloges.gr/find_catalog_data_strict.php";
 		$data = array(
 		'FName' => $FName, 
 		'LName' => $LName,

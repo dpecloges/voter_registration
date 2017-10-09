@@ -1,7 +1,9 @@
 <?php
-	include("lib/config/config.php");
+	
 	if(file_exists("Classes/DB/MySQLConnection.php"))
 	{
+		include("lib/config/config.php");
+
 		require_once("Classes/DB/MySQLConnection.php"); 
 		require_once("Classes/DB/MySQLCommand.php");
 		require_once("Classes/DB/MySQLCommandParameter.php");
@@ -10,6 +12,7 @@
 	}
 	else if(file_exists("../Classes/DB/MySQLConnection.php"))
 	{
+		include("../lib/config/config.php");
 		require_once("../Classes/DB/MySQLConnection.php"); 
 		require_once("../Classes/DB/MySQLCommand.php");
 		require_once("../Classes/DB/MySQLCommandParameter.php");
