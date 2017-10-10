@@ -8,6 +8,21 @@
 	textInput.val(s);	
 }
 
+function FixTextInputToUpperCaseGreekWithSpaces(textInput)
+{
+	var s = textInput.val();
+	//s = s.includes(" ") ? s.replace(" ","") : s;
+	s = s.toUpperCase();
+	s = ConvertStringToUppercaseGreek(s);
+	
+	
+	s =s.replace('/[^Α-Ω_ -]/','');
+	
+	//s = RemoveCharactersThatAreNotCapitalGreek(s);
+	textInput.val(s);	
+}
+
+
 function FixTextInputToNumbersOnly(textInput)
 {
 	var s = textInput.val();
@@ -16,7 +31,6 @@ function FixTextInputToNumbersOnly(textInput)
 	s = RemoveCharactersThatAreNotNumbers(s);
 	textInput.val(s);	
 }
-
 
 
 function ConvertStringToUppercaseGreek(str)

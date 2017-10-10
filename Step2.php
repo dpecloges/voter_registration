@@ -152,7 +152,7 @@
     <script src="assets/dist/js/framework/bootstrap.min.js"></script>
     <script src="assets/dist/js/language/el_GR.js"></script>   
     
-    <script type="text/javascript" src="js/StepFormsJS/TextFunctions.js"></script>
+    <script type="text/javascript" src="js/StepFormsJS/TextFunctions.js?ID=<?php echo time();?>"></script>
 
     
     <!-- Google Map Scripts -->
@@ -177,7 +177,7 @@
 			PreventFormSubmitOnEnterButtonHit();
 			
 			$('#TextBoxStreetName')[0].oninput = function(){
-				FixTextInputToUpperCaseGreek($('#TextBoxStreetName'));
+				FixTextInputToUpperCaseGreekWithSpaces($('#TextBoxStreetName'));
 				ShowAddressOnMapAccordingToUserInput();
 	     	};
 	     	
@@ -192,7 +192,7 @@
 	     	};
 
 	    	$('#TextBoxArea')[0].oninput = function(){
-				FixTextInputToUpperCaseGreek($('#TextBoxArea'));
+				FixTextInputToUpperCaseGreekWithSpaces($('#TextBoxArea'));
 				ShowAddressOnMapAccordingToUserInput();
 	     	};
 	     	
