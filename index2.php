@@ -207,8 +207,34 @@
     <script type="text/javascript" src="assets/dist/js/framework/bootstrap.min.js"></script>
     <script type="text/javascript" src="assets/dist/js/language/el_GR.js"></script>
 	
-	<script type="text/javascript" src="js/StepFormsJS/Step1.js"></script>
+	<script type="text/javascript" src="js/StepFormsJS/TextFunctions.js"></script>
 	<script type="text/javascript">
+	
+	
+	$(document).ready(function() {
+		$('#TextBoxFirstName')[0].oninput = function(){
+			FixTextInputToUpperCaseGreek($('#TextBoxFirstName'));
+     	};
+		
+		$('#TextBoxLastName')[0].oninput = function(){
+			FixTextInputToUpperCaseGreek($('#TextBoxLastName'));
+		};
+	
+		$('#TextBoxFathersName')[0].oninput = function(){
+			FixTextInputToUpperCaseGreek($('#TextBoxFathersName'));
+		};
+		
+		$('#TextBoxMothersName')[0].oninput = function(){
+			FixTextInputToUpperCaseGreek($('#TextBoxMothersName'));
+		};
+
+		$('#TextBoxBirthYear')[0].oninput = function(){
+			RemoveCharactersThatAreNotNumbers($('#TextBoxBirthYear'));
+		};
+	});
+	
+
+	
 	function RestartProcess() { window.location = "/index.php"; }
 	function GoToStep2() { window.location = "/Step2.php?UniqueKey=<?php echo $fUniqueKey;?>";}
 	<?php

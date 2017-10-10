@@ -2,10 +2,6 @@
 	session_start();
 	require_once("Classes/DBConnection.php"); 
 	
-	require_once("Classes/GoogleReCaptcha.php"); 
-	$fGoogleReCaptcha = new GoogleReCaptcha();
-	
-	
 	
 	if(!isset($_GET['UniqueKey']))
 	{
@@ -102,18 +98,6 @@
 	}
 	
 	
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Delete voter_registration_temp older than 2 hours
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/*$dateTimeNow = time();
- 	$dateTimeFrom = date($dateTimeNow - (2 * 3600));
- 	$sql = "DELETE FROM `voter_registration_temp` WHERE UNIX_TIMESTAMP(`DateTime`) < ".$dateTimeFrom;
- 	$command = new MySqlCommand($connection, $sql);
- 	$command->ExecuteQuery();*/
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
- 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	
 	// Get User Data from db
 	$tempRecordFound = false;
 	$sql = "SELECT `EMail`,`EMailIsVerified`,`MobilePhone`,`MobileIsVerified`,`Phone`,`Street`,`StreetNo`,`Zip`,`Municipality`,`County` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
@@ -168,21 +152,29 @@
     <script src="assets/dist/js/framework/bootstrap.min.js"></script>
     <script src="assets/dist/js/language/el_GR.js"></script>   
     
-    <script type="text/javascript" src="js/StepFormsJS/TextFunctions.js?ID=<?php echo time();?>"></script>
+    <script type="text/javascript" src="js/StepFormsJS/TextFunctions.js"></script>
 
     
     <!-- Google Map Scripts -->
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?php echo My_Google_API_Key;?>&libraries=places&language=el"></script>
-    <script type="text/javascript" src="js/StepFormsJS/Step2_GoogleMap.js?ID=<?php echo time();?>"></script>
+    <script type="text/javascript" src="js/StepFormsJS/Step2_GoogleMap.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?php echo My_Google_API_Key;?>&libraries=places&language=el&callback=GoogleMapLoaded"></script>
+   
     <!--------------------------->
     
 	<script type="text/javascript">
 		
-		$(document).ready(function() {
-			PreventFormSubmitOnEnterButtonHit();
-			
+		function GoogleMapLoaded()
+		{
+			$('#LoadingText').hide();
+			$("#RegistrationForm").css("visibility", "visible");
+
 			InitGoogleMap();
-			ShowAddressOnMapAccordingToUserInput()
+			ShowAddressOnMapAccordingToUserInput();
+		}
+
+		$(document).ready(function() {
+
+			PreventFormSubmitOnEnterButtonHit();
 			
 			$('#TextBoxStreetName')[0].oninput = function(){
 				FixTextInputToUpperCaseGreek($('#TextBoxStreetName'));
@@ -217,6 +209,7 @@
 				}
 			?>
 		});
+		
 		
 		function ShowAddressOnMapAccordingToUserInput()
 		{
@@ -261,9 +254,6 @@
 				});	
 		}
 
-		
-	    
-	    
 	    function NoNumbersAddressClick()
 	    {
 	    	if($("#NoNumbersAddress").is(':checked'))		
@@ -458,8 +448,16 @@
 <body>
     <div class="register-photo" style="background-color:white!important;">
         <div class="form-container">
-        
-            <form method="post" action="" id="RegistrationForm">
+        	
+        	<div id="LoadingText">
+        		<div class="row">
+            		<div class="col-sm-6">
+        				Παρακαλω περιμένετε....
+        			</div>
+        		</div>
+        	</div>
+        	
+            <form method="post" action="" id="RegistrationForm" style="visibility:hidden;">
             	<div class="row">
             		<div class="col-sm-6">
             			<br/><br/>   
@@ -514,10 +512,7 @@
 						  <label><input type="checkbox" name="NoNumbersAddress" <?php if(isset($_POST['NoNumbersAddress'])){?> checked="checked"<?php }?> id="NoNumbersAddress" onclick="NoNumbersAddressClick();" value="">Δεν υπάρχει αρίθμηση στην διεύθυνση μου</label>
 						</div>
             		</div>
-
             	</div>
-            	
-            	
             	<br/>
             	<div class="row">
             		<div class="col-sm-6">
@@ -546,10 +541,7 @@
             		<div class="col-sm-6"><input type="text" class="form-control" name="TextBoxDivision" id="TextBoxDivision" placeholder="Νομός / Τομέας" readonly="readonly" style="background-color:#fffdf3;" value="<?php echo $fCounty;?>" /></div>
 		        </div>
                 <br/><br/>
-                
-                
                 <br/><br/>
-                
 			    <div class="row">
 			    	<div class="col-sm-6"><button type="button" class="btn btn-danger btn-block" onclick="ResetData();return false;">Επιστροφή στην αρχική</button></div>
 			    	<div class="col-sm-6"><button  type="submit" class="btn btn-success btn-block" onclick="submitData();return false;">Επόμενο βήμα</button></div>
@@ -566,7 +558,6 @@
           <h4 class="modal-title" align="center">Προσοχή!</h4>
         </div>
         <div class="modal-body">
-
           <table style="height:100%!important;width:100%!important;border:0">
             <tbody>
               <tr style="height:20px"></tr>
@@ -582,7 +573,6 @@
               <tr style="height:10px"></tr>
             </tbody>
           </table>
-
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Κλείσιμο</button>

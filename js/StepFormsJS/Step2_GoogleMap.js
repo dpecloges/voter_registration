@@ -1,15 +1,4 @@
-﻿var placeSearch, autocomplete;
-var componentForm = {
-	street_number: 'short_name',
-	route: 'long_name',
-	locality: 'long_name',
-	administrative_area_level_1: 'short_name',
-	country: 'long_name',
-	postal_code: 'short_name'
-};
-
-var fAddressAutoComplete = null;
-var fGoogleMap = null;
+﻿var fGoogleMap = null;
 var fGoogleMapMarker = null;
 
 function InitGoogleMap()
@@ -27,7 +16,7 @@ function ShowAddressOnGoogleMap(address)
 		if (status === 'OK') 
 		{
 			fGoogleMap.setCenter(results[0].geometry.location);
-			var marker = new google.maps.Marker({
+			fGoogleMapMarker  = new google.maps.Marker({
 			map: fGoogleMap,
 			position: results[0].geometry.location
 			});
