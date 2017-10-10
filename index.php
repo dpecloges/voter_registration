@@ -33,25 +33,25 @@
 		$fErrorCode = 0 ;
 		
 		$userInputErrosFound = false;
-		if(mb_strlen($fFirstName) < 4)
+		if(mb_strlen($fFirstName) < 2)
 		{
 			$fFirstNameError = "Παρακαλούμε εισάγετε έγκυρο Όνομα! (τουλάχιστον 4 χαρακτήρες)";
 			$userInputErrosFound = true;
 		}
 		
-		if(mb_strlen($fLastName) < 4)
+		if(mb_strlen($fLastName) < 2)
 		{
 			$fLastNameError = "Παρακαλούμε εισάγετε έγκυρο Επώνυμο! (τουλάχιστον 4 χαρακτήρες)";
 			$userInputErrosFound = true;			
 		}
 		
-		if(mb_strlen($fFathersName) < 3)
+		if(mb_strlen($fFathersName) < 2)
 		{
 			$fFathersNameError = "Παρακαλούμε εισάγετε το Πατρώνυμο σας!";
 			$userInputErrosFound = true;			
 		}
 		
-		if(mb_strlen($fMothersName) < 3)
+		if(mb_strlen($fMothersName) < 2)
 		{
 			$fMothersNameError = "Παρακαλούμε εισάγετε το Όνομα της Μητέρας σας!";
 			$userInputErrosFound = true;			
