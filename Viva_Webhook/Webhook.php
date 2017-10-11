@@ -1,5 +1,9 @@
 <?php
 	require_once("../Classes/DBConnection.php");
+	
+	require_once("../Classes/Mailer.php");
+	$fMailer = new Mailer();
+
 
 	$fVivaAPIURL = "http://demo.vivapayments.com";
     $fVivaWebHookAuthURL  = "/api/messages/config/token";
@@ -93,9 +97,40 @@
 		$command->Parameters->setInteger(2,$orderID);
 		$command->ExecuteQuery();
 
+		
+		// Send Verification Email
+		$userEmail = "";
+		$userFirstName = "";
+		$userLastName = "";
+		$voterID = "";
+		$sql = "SELECT `EMail`,`FirstName`,`LastName`,`VoterID` FROM `voter_registration_temp` WHERE `VivaOrderID`=?";
+		$command = new MySqlCommand($connection, $sql);
+		$command->Parameters->setInteger(1,$orderID);
+		$reader = $command->ExecuteReader();
+		if($reader->Read())
+		{
+			$userEmail = $reader->getValue(0);
+			$userFirstName = $reader->getValue(1);
+			$userLastName = $reader->getValue(2);
+			$voterID = $reader->getValue(3);
+			
+			$fMailer->SendRegistrationThankYouEmail($userEmail, $userFirstName. " ". $userLastName, $voterID);
+		}
+		$reader->Close();
+
+		
+		
+		
 		// Delete temp record
 		$sql = "DELETE FROM `voter_registration_temp` WHERE `VivaOrderID`=?";
 		$command = new MySqlCommand($connection, $sql);
 		$command->Parameters->setInteger(1,$orderID);
 		$command->ExecuteQuery();	
+		
+		
+		
+		// Send Thank you email
+		
+		
+		
 ?>

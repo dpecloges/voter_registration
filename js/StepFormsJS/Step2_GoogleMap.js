@@ -16,14 +16,15 @@ function ShowAddressOnGoogleMap(address)
 		if (status === 'OK') 
 		{
 			fGoogleMap.setCenter(results[0].geometry.location);
-			fGoogleMapMarker  = new google.maps.Marker({
-			map: fGoogleMap,
-			position: results[0].geometry.location
+			fGoogleMapMarker = new google.maps.Marker({
+				map: fGoogleMap,
+				position: results[0].geometry.location
 			});
 		} 
 		else 
 		{
-			alert('Geocode was not successful for the following reason: ' + status);
+			fGoogleMapMarker = null;
+			//alert('Geocode was not successful for the following reason: ' + status);
 		}
 	});
 }

@@ -311,6 +311,16 @@
 					$('#BtnCheckEmailCode').show();
 					$('#TextBoxEMailPin').focus();
 				}
+				else if(data.Error==120)
+				{
+					$('#SendEmailMsg').hide();
+					$('#ButtonSendEmailVerification').hide();		
+					$('#SendEmailDiv').show();
+					$('#BtnCheckEmailCode').show();
+					$('#TextBoxEMailPin').focus();
+					$("#ErrorMsgEmail").html(data.ErrorDescr);
+					$('#ErrorMsgEmail').show();
+				}
 				else
 				{
 					$("#ErrorMsgEmail").html(data.ErrorDescr);
@@ -335,7 +345,6 @@
 					$('#ErrorMsgEmail').show();
 					$('#MobilePIN').focus();
 					$('#ErrorMsgEmail').hide();
-
 		   	 	}
 			});	
 		}
@@ -379,6 +388,18 @@
 					$('#MobileModal').modal('show');
 					$('#ButtonSendSMSVerificationPin').hide();
 					$('#ButtonSendVoiceVerificationPin').hide();
+				}
+				else if(data.Error==120)
+				{
+					$('#ErrorMsgMobile').hide()
+					$('#SendMobileMsg').hide();
+					$('#SendMobileDiv').show();
+					$('#ButtonCheckMobilePin').show();
+					$('#MobileModal').modal('show');
+					$('#ButtonSendSMSVerificationPin').hide();
+					$('#ButtonSendVoiceVerificationPin').hide();
+					$("#ErrorMsgMobile").html(data.ErrorDescr);
+					$('#ErrorMsgMobile').show();
 				}
 				else
 				{

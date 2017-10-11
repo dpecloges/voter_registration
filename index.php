@@ -271,9 +271,29 @@
     </style>
 </head>
 <body>
+    
     <div class="register-photo" style="background-color:white!important;">
+        <p style="text-align: center; color: #f20d18; font-size: 3em;"><b>ΠΡΟΕΓΓΡΑΦΕΙΤΕ</b></p>
+        <p style="text-align: center; color: #f20d18; font-size: 1.5em;"><b>Για να μην περιμένετε στην ουρά!</b></p>
+		<div  style="width:800px; margin-left:auto;margin-right:auto;">
+			<br><br>
+			Συμπληρώστε την φόρμα εγγραφής, είναι μια απλή διαδικασία <b>τριών βημάτων</b>:
+			<br><br>
+			<b>Βήμα 1ο</b> Βάλτε τα στοιχεία σας με ακρίβεια όπως είναι στην ταυτότητά σας, με κεφαλαία γράμματα.
+			<br>Aν έχετε δύο Επώνυμα βάλτε μόνο το πρώτο.
+			<br>Αφού γίνει η ταυτοποίηση με τον εκλογικό κατάλογο προχωρείστε στο επόμενο βήμα.<br>Θα πρέπει να έχετε πρόσβαση στο e-mail σας και να έχετε δίπλα σας το κινητό σας γιατί θα χρειαστεί να κάνετε επιβεβαίωση και στα δύο.
+			<br><br>
+			<b>Βήμα 2ο</b> Επιβεβαίωση e-mail και κινητού. <br>Επιβεβαιώστε το e-mail σας και το τηλέφωνό σας σύμφωνα με τις οδηγίες. 
+			<br>Σπάνια αλλά σε ορισμένα δίκτυα μπορεί να χρειαστεί να περιμένετε έως και 2′ για την παραλαβή του κωδικού.
+			<br><br>
+			<b>Βήμα 3ο</b> Πληρώστε την εγγραφή σας και εκτυπώστε την αίτηση που θα λάβετε στο Email σας μετά την πληρωμή. 	
+			<br><br>	
+		</div>
+        
+        
+        
         <div class="form-container">
-            <form method="post" action="" id="RegistrationForm" name="RegistrationForm<?php echo time();?>">
+            <form method="post" action="index.php#RegistrationForm" id="RegistrationForm" name="RegistrationForm<?php echo time();?>">
                 <div class="form-group">
                     <input class="form-control" type="text" placeholder="* Όνομα" name="TextBoxFirstName" id="TextBoxFirstName" value="<?php echo $fFirstName;?>" maxlength="30" />
                 	<small class="help-block" style="color:red;"><?php echo $fFirstNameError;?></small>
@@ -386,6 +406,24 @@
             </form>
         </div>
     </div>
+    
+    <!--<div style="width:1000px;margin-left:auto;margin-right:auto;">
+		<div>
+			<br>
+			<font color="#a64d79"><span style="font-size:12.8px">&quot; Υποβάλλοντας 
+			αίτηση συμμετοχής στην εκλογική διαδικασία παρέχεται στην Ανεξάρτητη 
+			Επιτροπή Διαδικασιών &amp; Δεοντολογίας (ΑΕΔΔ) η συγκατάθεσή&nbsp; για χρήση 
+			και επεξεργασία των δεδομένων προσωπικού χαρακτήρα του αιτούντα για 
+			τις διαδικασίες συγκρότησης του νέου φορέα. Η υποβολή αίτησης 
+			συμμετοχής συνεπάγεται ρητή και ανεπιφύλακτη συναίνεση του αιτούντα 
+			για την καταχώρηση δεδομένων προσωπικού χαρακτήρα που τον αφορούν σε 
+			αρχείο, που θα τηρείται από τη ΑΕΔΔ, και την επεξεργασία αυτών των 
+			δεδομένων σύμφωνα με την εκάστοτε ισχύουσα νομοθεσία περί προστασίας 
+			προσωπικών δεδομένων&nbsp;και τους
+			<a href="https://dpekloges.gr/terms/" target="_blank">όρους χρήσης</a>.&quot;</span></font>
+		</div>
+		<br>
+    </div>-->
 
   <!--------------------------------------------------------------- ERROR MODAL --------------------------------------------------------------->
   <div class="modal fade" id="ErrModal" role="dialog">
@@ -397,17 +435,15 @@
         <div class="modal-body">
           <table style="height:100%!important;width:100%!important;border:0">
             <tbody>
-              <tr style="height:20px"></tr>
               <tr>
                 <td align="center">
                   <div class="alert alert-danger">
                     <span>
-                        <div class="row" id="ErrorMsg">&nbsp;</div>
+                        <div class="row" id="ErrorMsg"><br>&nbsp;</div>
                     </span>
                   </div>
                 </td>
               </tr>
-              <tr style="height:10px"></tr>
             </tbody>
           </table>
         </div>

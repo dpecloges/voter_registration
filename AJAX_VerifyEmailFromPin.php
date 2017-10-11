@@ -17,7 +17,7 @@ while($reader->Read())
 }
 $reader->Close();
 
-if($verificationPinInDB == $fPin )
+if($verificationPinInDB == $fPin && $fPin!=null && $fPin>0)
 {
 	$sql = "UPDATE `voter_registration_temp` SET `EMailIsVerified`=1 WHERE `UniqueKey` = ?";
 	$command = new MySqlCommand($connection,$sql);	
