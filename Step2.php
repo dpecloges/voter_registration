@@ -54,15 +54,16 @@
 		}
 		
 		
-		$sql = "UPDATE `voter_registration_temp` SET `Phone`=?,`Street`=?,`StreetNo`=?,`Zip`=?,`Municipality`=?,`County`=?  WHERE `UniqueKey`=?";
+		$sql = "UPDATE `voter_registration_temp` SET `Phone`=?,`Street`=?,`StreetNo`=?,`Zip`=?,`Municipality`=?,`MunicipalityID`=?,`County`=?  WHERE `UniqueKey`=?";
 		$command = new MySQLCommand($connection, $sql);
 		$command->Parameters->setString(1,$fPhone);
 		$command->Parameters->setString(2,$fStreet);
 		$command->Parameters->setString(3,$fStreetNo);
 		$command->Parameters->setString(4,$fZip);
 		$command->Parameters->setString(5,$fMunicipality);
-		$command->Parameters->setString(6,$fCounty);
-		$command->Parameters->setString(7,$fUniqueKey);
+		$command->Parameters->setInteger(6,$fMunicipalityID);
+		$command->Parameters->setString(7,$fCounty);
+		$command->Parameters->setString(8,$fUniqueKey);
 		$command->ExecuteQuery();
 
 		
@@ -100,7 +101,7 @@
 	
 	// Get User Data from db
 	$tempRecordFound = false;
-	$sql = "SELECT `EMail`,`EMailIsVerified`,`MobilePhone`,`MobileIsVerified`,`Phone`,`Street`,`StreetNo`,`Zip`,`Municipality`,`County` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
+	$sql = "SELECT `EMail`,`EMailIsVerified`,`MobilePhone`,`MobileIsVerified`,`Phone`,`Street`,`StreetNo`,`Zip`,`Municipality`,`County`,`MunicipalityID`FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
 	$command = new MySQLCommand($connection, $sql);
 	$command->Parameters->setString(1,$fUniqueKey);
 	$reader = $command->ExecuteReader();
@@ -121,6 +122,7 @@
 		$fZip = $reader->getValue(7);
 		$fMunicipality = $reader->getValue(8);
 		$fCounty = $reader->getValue(9);
+		$fMunicipalityID = $reader->getValue(10);
 	}
 	$reader->Close();
 	
