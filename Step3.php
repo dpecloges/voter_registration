@@ -56,7 +56,7 @@
 	<script type="text/javascript">
 		function ResetData()
 		{
-			window.location = "index.php";
+			window.location = "Step2.php?UniqueKey=<?php echo $fUniqueKey;?>";
 		}
 		
 		function SubmitForm()
@@ -95,7 +95,7 @@
 				<br>
 				<br>
 				<div class="row">
-					<div class="col-sm-6"><button type="button" class="btn btn-danger btn-block" onclick="ResetData();">Επιστροφή στην αρχική</button></div>
+					<div class="col-sm-6"><button type="button" class="btn btn-danger btn-block" onclick="ResetData();">Επιστροφή στο Βήμα 2</button></div>
 					<div class="col-sm-6"><button type="submit" class="btn btn-success btn-block" onclick="SubmitForm();">Μετάβαση σε Viva</button></div>
 				</div> 
         </div>

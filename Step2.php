@@ -337,6 +337,7 @@
 		   	 	{
 					$('#EmailModal').modal('hide');	
 					$('#ButtonCheckEmail').text("Επαληθεύτηκε");
+					$('#TextBoxEmail').attr("readonly", true);
 					$("#ButtonCheckEmail").attr("disabled", true);
 		   	 	}
 		   	 	else
@@ -426,6 +427,7 @@
 					$('#MobileModal').modal('hide');	
 					$('#ButtonCheckMobile').text("Επαληθεύτηκε");
 					$("#ButtonCheckMobile").attr("disabled", true);
+					$('#TextBoxMobile').attr("readonly", true);
 					$('#mobileError').hide();
 		   	 	}
 		   	 	else
@@ -483,7 +485,7 @@
             		<div class="col-sm-6">
             			<br/><br/>   
 		                <div class="form-group">
-		                    <input type="email" class="form-control" placeholder="* Email" name="TextBoxEmail" id="TextBoxEmail" value="<?php echo $fEmail;?>" maxlength="50" />
+		                    <input type="email" class="form-control" <?php if($fEMailIsVerified){?> readonly="readonly"<?php }?> placeholder="* Email" name="TextBoxEmail" id="TextBoxEmail" value="<?php echo $fEmail;?>" maxlength="50" />
 		                	<small class="help-block" style="color:red;" id="emailError"><?php echo $fEMailError;?></small>
 		                </div>
 		                

@@ -25,7 +25,6 @@
 	);
 	$context = stream_context_create($opts);
 	$fWebhookAuthorizationData = file_get_contents($fWebHookAuthorizationCodeURL, false, $context);
-	echo $fWebhookAuthorizationData;
 	///////////////////////////////////////////////////////////////////////////////////////
 	
 	$data = json_decode(file_get_contents('php://input'), true); 
@@ -92,44 +91,50 @@
 							voter_registration_temp.County,
 							?									
 		FROM `voter_registration_temp` WHERE voter_registration_temp.VivaOrderID=?';
-		$command = new MySqlCommand($connection, $sql);
-		$command->Parameters->setString(1,json_encode($data));
-		$command->Parameters->setInteger(2,$orderID);
-		$command->ExecuteQuery();
+	$command = new MySqlCommand($connection, $sql);
+	$command->Parameters->setString(1,json_encode($data));
+	$command->Parameters->setInteger(2,$orderID);
+	$command->ExecuteQuery();
+
+	
+	// Send Verification Email
+	$userEmail = "";
+	$userFirstName = "";
+	$userLastName = "";
+	$voterID = "";
+	$sql = "SELECT `EMail`,`FirstName`,`LastName`,`VoterID` FROM `voter_registration_temp` WHERE `VivaOrderID`=?";
+	$command = new MySqlCommand($connection, $sql);
+	$command->Parameters->setInteger(1,$orderID);
+	$reader = $command->ExecuteReader();
+	if($reader->Read())
+	{
+		$userEmail = $reader->getValue(0);
+		$userFirstName = $reader->getValue(1);
+		$userLastName = $reader->getValue(2);
+		$voterID = $reader->getValue(3);
+		
+		$fMailer->SendRegistrationThankYouEmail($userEmail, $userFirstName. " ". $userLastName, $voterID);
+	}
+	$reader->Close();
 
 		
-		// Send Verification Email
-		$userEmail = "";
-		$userFirstName = "";
-		$userLastName = "";
-		$voterID = "";
-		$sql = "SELECT `EMail`,`FirstName`,`LastName`,`VoterID` FROM `voter_registration_temp` WHERE `VivaOrderID`=?";
-		$command = new MySqlCommand($connection, $sql);
-		$command->Parameters->setInteger(1,$orderID);
-		$reader = $command->ExecuteReader();
-		if($reader->Read())
-		{
-			$userEmail = $reader->getValue(0);
-			$userFirstName = $reader->getValue(1);
-			$userLastName = $reader->getValue(2);
-			$voterID = $reader->getValue(3);
-			
-			$fMailer->SendRegistrationThankYouEmail($userEmail, $userFirstName. " ". $userLastName, $voterID);
-		}
-		$reader->Close();
+		
+	
+	// Delete temp record
+	$sql = "DELETE FROM `voter_registration_temp` WHERE `VivaOrderID`=?";
+	$command = new MySqlCommand($connection, $sql);
+	$command->Parameters->setInteger(1,$orderID);
+	$command->ExecuteQuery();	
+	
+		
+		
 
-		
-		
-		
-		// Delete temp record
-		$sql = "DELETE FROM `voter_registration_temp` WHERE `VivaOrderID`=?";
-		$command = new MySqlCommand($connection, $sql);
-		$command->Parameters->setInteger(1,$orderID);
-		$command->ExecuteQuery();	
-		
-		
-		
-		// Send Thank you email
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// ECHO VIVA WEBHOOK AUTHORIZATION!!!!!!!
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	echo $fWebhookAuthorizationData;
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 		
 		
 		

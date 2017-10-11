@@ -3,6 +3,11 @@ require_once("Classes/DBConnection.php");
 
 $fInvoiceId = $_POST['invoiceID'];
 
+$fOfflinePaymentsEndsAt = strtotime('10-Nov-2017 20:59:59');
+$fDateTimeNow = time();  
+$fPaymentTimeOut =  $fOfflinePaymentsEndsAt - $fDateTimeNow;
+
+
 
 // The POST URL and parameters
 $request =  'http://demo.vivapayments.com/api/orders';		// demo environment URL
@@ -23,7 +28,8 @@ $RequestLang = 'el-GR'; //This will display the payment page in English (default
 $Source = 'Default'; // This will assign the transaction to the Source with Code = "Default". If left empty, the default source will be used.
 $DisableCash = 'false';
 $DisablePayAtHome = 'false';
-$postargs = 'Amount='.urlencode($Amount).'&AllowRecurring='.$AllowRecurring.'&RequestLang='.$RequestLang.'&SourceCode='.$Source.'&DisableCash ='.$DisableCash.'&DisablePayAtHome ='.$DisablePayAtHome;
+$PaymentTimeOut  = $fPaymentTimeOut;
+$postargs = 'Amount='.urlencode($Amount).'&AllowRecurring='.$AllowRecurring.'&RequestLang='.$RequestLang.'&SourceCode='.$Source.'&DisableCash='.$DisableCash.'&DisablePayAtHome='.$DisablePayAtHome.'&PaymentTimeOut='.$fPaymentTimeOut;
 
 // Get the curl session object
 $session = curl_init($request);

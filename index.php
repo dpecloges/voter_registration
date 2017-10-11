@@ -295,26 +295,26 @@
         <div class="form-container">
             <form method="post" action="index.php#RegistrationForm" id="RegistrationForm" name="RegistrationForm<?php echo time();?>">
                 <div class="form-group">
-                    <input class="form-control" type="text" placeholder="* Όνομα" name="TextBoxFirstName" id="TextBoxFirstName" value="<?php echo $fFirstName;?>" maxlength="30" />
+                    <input class="form-control" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Όνομα" name="TextBoxFirstName" id="TextBoxFirstName" value="<?php echo $fFirstName;?>" maxlength="30" />
                 	<small class="help-block" style="color:red;"><?php echo $fFirstNameError;?></small>
                 </div>
                 <div class="form-group">
-                    <input class="form-control" type="text" placeholder="* Επώνυμο" name="TextBoxLastName" id="TextBoxLastName" value="<?php echo $fLastName;?>" maxlength="30" />
+                    <input class="form-control" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Επώνυμο" name="TextBoxLastName" id="TextBoxLastName" value="<?php echo $fLastName;?>" maxlength="30" />
                 	<small class="help-block" style="color:red;"><?php echo $fLastNameError;?></small>
                 </div>
                 <div class="form-group"> 
-                    <input class="form-control" type="text" placeholder="* Πατρώνυμο" name="TextBoxFathersName" id="TextBoxFathersName" value="<?php echo $fFathersName;?>" maxlength="30" />
+                    <input class="form-control" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Πατρώνυμο" name="TextBoxFathersName" id="TextBoxFathersName" value="<?php echo $fFathersName;?>" maxlength="30" />
                 	<small class="help-block" style="color:red;"><?php echo $fFathersNameError;?></small>
                 </div>
                 <div class="form-group"> 
-                    <input class="form-control" type="text" placeholder="* Ονομα Μητέρας" name="TextBoxMothersName" id="TextBoxMothersName" value="<?php echo $fMothersName;?>" maxlength="30" />
+                    <input class="form-control" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Ονομα Μητέρας" name="TextBoxMothersName" id="TextBoxMothersName" value="<?php echo $fMothersName;?>" maxlength="30" />
                 	<small class="help-block" style="color:red;"><?php echo $fMothersNameError;?></small>
                 </div>
                 
                  <div class="form-group"> 
                     <div class="row">
 	                    <div class="col-sm-3">
-							<input class="form-control" type="text" placeholder="* Έτος Γέννησης" name="TextBoxBirthYear" id="TextBoxBirthYear" value="<?php echo $fBirthYear;?>" maxlength="4" style="width: 232px" /></div>
+							<input class="form-control"  <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Έτος Γέννησης" name="TextBoxBirthYear" id="TextBoxBirthYear" value="<?php echo $fBirthYear;?>" maxlength="4" style="width: 232px" /></div>
 						<div class="col-sm-9"> 								
 						<?php
 								if(!$fCaptchaIsVerified)
