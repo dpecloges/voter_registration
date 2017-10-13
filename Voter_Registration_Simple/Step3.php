@@ -39,13 +39,13 @@
 	{
 		// Check if email and mobile are verified
 		$voterInfoIsVerified = false;
-		$sql = "SELECT `EMailIsVerified`,`MobileIsVerified` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
+		$sql = "SELECT `MobileIsVerified` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
 		$command = new MySQLCommand($connection, $sql);
 		$command->Parameters->setString(1,$fUniqueKey);
 		$reader = $command->ExecuteReader();
 		if($reader->Read())
 		{
-			$voterInfoIsVerified = ($reader->getValue(0)==1) && ($reader->getValue(1)==1);
+			$voterInfoIsVerified = ($reader->getValue(0)==1);
 		}
 		$reader->Close();
 		

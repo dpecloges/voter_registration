@@ -10,98 +10,167 @@
 	}
 	
 	$fUniqueKey = $_GET['UniqueKey'];
+	$fCountryISO = "GR"; // Default for greece
+	
 	
 	$fErrorCode = 0;
 	$fErrorDescription = "";
+	
+	
+	function IsMailValid($email)
+	{
+		return filter_var($email, FILTER_VALIDATE_EMAIL);
+	}
 	
 	if(isset($_POST['TextBoxEmail']))
 	{
 		$fEmail = $_POST['TextBoxEmail'];
 		$fMobilePhone = $_POST['TextBoxMobile'];
 		$fPhone = $_POST['TextBoxTelephone'];
+		
+		$fCountryISO = trim($_POST['ComboBoxCountry']);
+		$fRegionCode = trim($_POST['ComboBoxRegion']);
+		$fMunicipality = trim($_POST['ComboBoxMunicipality']);
+
 		$fStreet = trim($_POST['TextBoxStreetName']);
 		$fStreetNo = trim($_POST['TextBoxStreetNumber']);
 		$fArea = trim($_POST['TextBoxArea']);
 		$fZip = trim($_POST['TextBoxZipCode']);
+		$fEMail = trim($_POST['TextBoxEmail']);
+		$fProfessionID = intval($_POST['ComboBoxProfession']);
 		
-		$fMunicipalityID = intval($_POST['ComboBoxMunicipality']);
-		$sql = "SELECT `KOD_DHM`,`ONOMA` FROM `YPES_DHMOI` WHERE `KOD_DHM`=".$fMunicipalityID;
-		$command = new MySqlCommand($connection,$sql);
-		$reader = $command->ExecuteReader();
-		while($reader->Read())
+		// Check if address is valid
+		if(!isset($_POST['AddressChange']))
 		{
-			$fMunicipality = $reader->getValue(1);
-		}
-		$reader->Close();
-		
-		$fCounty = trim($_POST['TextBoxDivision']);
-		
-		$addressIsValid = false;
-				
-		if(isset($_POST['NoNumbersAddress']))
-		{
-			$addressIsValid = $fStreet!="" && $fZip !="" && $fMunicipality !="";
-		}
-		else
-		{
-			$addressIsValid = $fStreet!="" && $fStreetNo!="" && $fZip !="" && $fMunicipality !="";
-		}
-		
-		if(!$addressIsValid)
-		{
-			$fErrorCode = 101;
-			$fErrorDescription = 'Δεν έχετε εισάγει την Διεύθυνση κατοικίας σας !';
-		}
-		
-		
-		$sql = "UPDATE `voter_registration_temp` SET `Phone`=?,`Street`=?,`StreetNo`=?,`Zip`=?,`Municipality`=?,`MunicipalityID`=?,`County`=?  WHERE `UniqueKey`=?";
-		$command = new MySQLCommand($connection, $sql);
-		$command->Parameters->setString(1,$fPhone);
-		$command->Parameters->setString(2,$fStreet);
-		$command->Parameters->setString(3,$fStreetNo);
-		$command->Parameters->setString(4,$fZip);
-		$command->Parameters->setString(5,$fMunicipality);
-		$command->Parameters->setInteger(6,$fMunicipalityID);
-		$command->Parameters->setString(7,$fCounty);
-		$command->Parameters->setString(8,$fUniqueKey);
-		$command->ExecuteQuery();
-
-		
-		$sql = "SELECT `EMailIsVerified`,`MobileIsVerified` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
-		$command = new MySQLCommand($connection, $sql);
-		$command->Parameters->setString(1,$fUniqueKey);
-		$reader = $command->ExecuteReader();
-		if($reader->Read())
-		{
-			$emailIsVerified = $reader->getValue(0);
-			$mobileIsVerified = $reader->getValue(1); 
-			
-			if ($emailIsVerified==1 && $mobileIsVerified ==1 && $addressIsValid)
+			if($fCountryISO=="GR")
 			{
-				header('refresh: 0; url=Step3.php?UniqueKey='.$fUniqueKey);
-				exit;
+				$addressIsValid = true;
+				
+				if($fRegionCode=="")
+				{
+					$fRegionError = "Επιλέξτε νομό!";
+					$addressIsValid = false;
+				}
+				
+				if($fMunicipality=="")
+				{
+					$fMunicipalityError = 'Επιλέξτε Δήμο';
+					$addressIsValid = false;
+				}
+				
+				if($fStreet =="")
+				{
+					$fStreetError = 'Δέν έχετε εισάγει Οδό';
+					$addressIsValid = false;
+				}
+				
+				if($fStreetNo =="" && !isset($_POST['NoNumbersAddress']))
+				{
+					$fStreetNoError= 'Δέν έχετε εισάγει Αριθμό';
+					$addressIsValid = false;
+				}
+				
+				if($fZip =="")
+				{
+					$fZipError = 'Ο Τ.Κ είναι απαραίτητος!';
+					$addressIsValid = false;
+				}			
 			}
 			else
 			{
-				if($emailIsVerified!=1)
+				if($fStreet =="")
 				{
-					$fEMailError = "Το πεδίο Email είναι υποχρεωτικό!";
+					$fStreetError = 'Δέν έχετε εισάγει Οδό';
+					$addressIsValid = false;
 				}
 				
-				if ($mobileIsVerified!=1)
+				if($fStreetNo =="" && !isset($_POST['NoNumbersAddress']))
 				{
-					$fMobileError = "Το πεδίο κινητό τηλέφωνο είναι υποχρεωτικό!";
+					$fStreetNoError= 'Δέν έχετε εισάγει Αριθμό';
+					$addressIsValid = false;
 				}
-			}	
+				
+				if($fZip =="")
+				{
+					$fZipError = 'Ο Τ.Κ είναι απαραίτητος!';
+					$addressIsValid = false;
+				}	
+				
+				if($fArea =="")
+				{
+					$fAreaError= 'Δώστε όνομα πόλης ή περιοχής';
+					$addressIsValid = false;
+				}	
+			}
 		}
-		$reader->Close();
+		else
+		{
+			$addressIsValid = true;
+		}
+		
+		// Address is not valid message	
+		if(!$addressIsValid)
+		{
+			$fErrorCode = 101;
+			$fErrorDescription = 'Ελέξτε την διευθυνση σας!';
+		}
+		
+		
+		$sql = "UPDATE `voter_registration_temp` SET `Phone`=?,`CountryISO`=?,`RegionCode`=?,`Municipality`=?,`Street`=?,`StreetNo`=?,`Area`=?,`Zip`=?,`EMail`=?,`ProfessionID`=?  WHERE `UniqueKey`=?";
+		$command = new MySQLCommand($connection, $sql);
+		$command->Parameters->setString(1,$fPhone);
+		$command->Parameters->setString(2,$fCountryISO);
+		$command->Parameters->setString(3,$fRegionCode);
+		$command->Parameters->setString(4,$fMunicipality);		
+		$command->Parameters->setString(5,$fStreet);
+		$command->Parameters->setString(6,$fStreetNo);
+		$command->Parameters->setString(7,$fArea);
+		$command->Parameters->setString(8,$fZip);
+		$command->Parameters->setString(9,$fEMail);
+		$command->Parameters->setInteger(10,$fProfessionID);
+		$command->Parameters->setString(11,$fUniqueKey);
+		$command->ExecuteQuery();
+		
+		
+		if(!isset($_POST['AddressChange']))
+		{
+			$sql = "SELECT `MobileIsVerified`,`EMail` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
+			$command = new MySQLCommand($connection, $sql);
+			$command->Parameters->setString(1,$fUniqueKey);
+			$reader = $command->ExecuteReader();
+			if($reader->Read())
+			{
+				$mobileIsVerified = $reader->getValue(0); 
+				
+				$emailIsVerified = IsMailValid($reader->getValue(1));		
+				
+				if ($mobileIsVerified ==1 && $emailIsVerified  && $addressIsValid)
+				{
+					header('refresh: 0; url=Step3.php?UniqueKey='.$fUniqueKey);
+					exit;
+				}
+				else
+				{			
+					if ($mobileIsVerified!=1)
+					{
+						$fMobileError = "Το πεδίο κινητό τηλέφωνο είναι υποχρεωτικό!";
+					}
+					
+					if ($emailIsVerified == false)
+					{
+						$fEMailError = "Το πεδίο Email είναι υποχρεωτικό!";
+					}
+				}	
+			}
+			$reader->Close();
+		}
 		
 	}
 	
 	
 	// Get User Data from db
 	$tempRecordFound = false;
-	$sql = "SELECT `EMail`,`EMailIsVerified`,`MobilePhone`,`MobileIsVerified`,`Phone`,`Street`,`StreetNo`,`Zip`,`Municipality`,`County`,`MunicipalityID`FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
+	$sql = "SELECT `EMail`,`MobilePhone`,`MobileIsVerified`,`Phone`,`CountryISO`,`RegionCode`,`Municipality`,`Street`,`StreetNo`,`Area`,`Zip` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
 	$command = new MySQLCommand($connection, $sql);
 	$command->Parameters->setString(1,$fUniqueKey);
 	$reader = $command->ExecuteReader();
@@ -109,20 +178,20 @@
 	{
 		$tempRecordFound = true;
 		$fEmail = $reader->getValue(0)!=""? $reader->getValue(0) : $fEmail;
-		$fEMailIsVerified = $reader->getValue(1);
-		$fVerifyEmailButtonLabel = ($fEMailIsVerified ==1) ? "Επαληθέυτηκε" :  'Επαλήθευση Email';
 		
-		$fMobilePhone = $reader->getValue(2) !=""? $reader->getValue(2) : $fMobilePhone ;
-		$fMobileIsVerified = $reader->getValue(3);
+		$fMobilePhone = $reader->getValue(1) !=""? $reader->getValue(1) : $fMobilePhone ;
+		$fMobileIsVerified = $reader->getValue(2);
 		$fVerifyMobileButtonLabel = ($fMobileIsVerified ==1) ? "Επαληθέυτηκε" :  'Επαλήθευση κινητού τηλεφώνου';
 		
-		$fPhone = $reader->getValue(4);
-		$fStreet = $reader->getValue(5);
-		$fStreetNo = $reader->getValue(6);
-		$fZip = $reader->getValue(7);
-		$fMunicipality = $reader->getValue(8);
-		$fCounty = $reader->getValue(9);
-		$fMunicipalityID = $reader->getValue(10);
+		$fPhone = $reader->getValue(3);
+		
+		$fCountryISO = ($reader->getValue(4) == null || "") ? "GR"  :$reader->getValue(4);
+		$fRegionCode = $reader->getValue(5);
+		$fMunicipality = $reader->getValue(6);
+		$fStreet = $reader->getValue(7);
+		$fStreetNo = $reader->getValue(8);
+		$fArea = $reader->getValue(9);
+		$fZip = $reader->getValue(10);
 	}
 	$reader->Close();
 	
@@ -177,24 +246,25 @@
 		$(document).ready(function() {
 
 			PreventFormSubmitOnEnterButtonHit();
+			NoNumbersAddressClick();
 			
 			$('#TextBoxStreetName')[0].oninput = function(){
-				FixTextInputToUpperCaseGreekWithSpaces($('#TextBoxStreetName'));
+				//FixTextInputToUpperCaseGreekWithSpaces($('#TextBoxStreetName'));
 				ShowAddressOnMapAccordingToUserInput();
 	     	};
 	     	
 	     	$('#TextBoxStreetNumber')[0].oninput = function(){
-				FixTextInputToNumbersOnly($('#TextBoxStreetNumber'));
+				//FixTextInputToNumbersOnly($('#TextBoxStreetNumber'));
 				ShowAddressOnMapAccordingToUserInput();
 	     	};
 	     	
 	     	$('#TextBoxZipCode')[0].oninput = function(){
-				FixTextInputToNumbersOnly($('#TextBoxZipCode'));
+				//FixTextInputToNumbersOnly($('#TextBoxZipCode'));
 				ShowAddressOnMapAccordingToUserInput();
 	     	};
 
 	    	$('#TextBoxArea')[0].oninput = function(){
-				FixTextInputToUpperCaseGreekWithSpaces($('#TextBoxArea'));
+				//FixTextInputToUpperCaseGreekWithSpaces($('#TextBoxArea'));
 				ShowAddressOnMapAccordingToUserInput();
 	     	};
 	     	
@@ -215,11 +285,13 @@
 		
 		function ShowAddressOnMapAccordingToUserInput()
 		{
+			var country = $("#ComboBoxCountry :selected").text();
+
 			if($("#NoNumbersAddress").is(':checked'))
 			{
 				if($('#TextBoxStreetName').val()!="" &&  $('#TextBoxZipCode').val()!="" && $('#TextBoxZipCode').val().length>4)
 				{
-					var address = $('#TextBoxStreetName').val()+ ' ' + $('#TextBoxStreetNumber').val() +"," +  $('#TextBoxZipCode').val() +",Greece";
+					var address = $('#TextBoxStreetName').val()+ ' ' + $('#TextBoxStreetNumber').val() +"," +  $('#TextBoxZipCode').val() +"," + country ;
 					ShowAddressOnGoogleMap(address);
 				}
 			}
@@ -227,7 +299,7 @@
 			{
 				if($('#TextBoxStreetName').val()!="" && $('#TextBoxStreetNumber').val() !="" &&  $('#TextBoxZipCode').val()!="" && $('#TextBoxZipCode').val().length>4)
 				{
-					var address = $('#TextBoxStreetName').val()+ ' ' + $('#TextBoxStreetNumber').val() +"," +  $('#TextBoxZipCode').val() +",Greece";
+					var address = $('#TextBoxStreetName').val()+ ' ' + $('#TextBoxStreetNumber').val() +"," +  $('#TextBoxZipCode').val() +"," +country;
 					ShowAddressOnGoogleMap(address);
 				}
 			}
@@ -245,17 +317,6 @@
 			});
 		}
 		
-		// Google Map
-      	function GetCountyFromMunicipality()
-		{
-			var municipality = $('#ComboBoxMunicipality').val();
-			$.post('AJAX_GetCountyFromMunicipality.php', {Municipality:municipality }, 
-				function(data){
-					$("#TextBoxDivision").val(data);
-					ShowAddressOnMap();
-				});	
-		}
-
 	    function NoNumbersAddressClick()
 	    {
 	    	if($("#NoNumbersAddress").is(':checked'))		
@@ -461,6 +522,36 @@
 		    }
 			return false;		   
 		}
+		
+		function CountryChanged()
+		{
+			var countryISO = $('#ComboBoxCountry').val();
+			SubmitFormOnAddressChange();
+		}
+		
+		function RegionChanged()
+		{
+			var region = $('#ComboBoxRegion').val();
+			SubmitFormOnAddressChange();
+		}
+		
+	
+		
+		function SubmitFormOnAddressChange()
+		{
+			$('#PleaseWaitDialog').modal('show');
+
+     		$('#RegistrationForm').append("<input type='hidden' name='AddressChange' value='1' />");
+     		$('#RegistrationForm').submit();
+     		return true;
+		}
+		
+		
+		function MunicipalityChanged()
+		{
+			$('#municipalityError').hide();
+		}
+		
 	</script>
 
     <style type="text/css">
@@ -482,26 +573,47 @@
         		</div>
         	</div>
         	
-            <form method="post" action="" id="RegistrationForm" style="visibility:hidden;">
+            <form method="post" action="" id="RegistrationForm" <?php if(1==1){?>style="visibility:hidden;"<?php }?>>
             	<div class="row">
             		<div class="col-sm-6">
             			<br/><br/>   
 		                <div class="form-group">
-		                    <input type="email" class="form-control" <?php if($fEMailIsVerified){?> readonly="readonly"<?php }?> placeholder="* Email" name="TextBoxEmail" id="TextBoxEmail" value="<?php echo $fEmail;?>" maxlength="50" />
-		                	<small class="help-block" style="color:red;" id="emailError"><?php echo $fEMailError;?></small>
+		                    <input type="text" class="form-control"  placeholder="* Email" name="TextBoxEmail" id="TextBoxEmail" value="<?php echo $fEmail;?>" maxlength="50" />
+		                    <small class="help-block" style="color:red;" id="emailError"><?php echo $fEMailError;?></small>
 		                </div>
-		                
-		                <button type="button" class="btn btn-default" <?php if($fEMailIsVerified ==1){?>disabled="disabled"<?php }?> id="ButtonCheckEmail" onclick="OpenEmailVerificationForm();" ><?php echo $fVerifyEmailButtonLabel;?></button>
 		                <br/><br/><br/>
 		                <div class="form-group">
 		                    <input type="tel" class="form-control" placeholder="* Τηλέφωνο κινητό" name="TextBoxMobile" id="TextBoxMobile" maxlength="10" value="<?php echo $fMobilePhone;?>" />
-		                	<small class="help-block" style=" color:red;" id="mobileError"><?php echo $fMobileError;?></small>
+		                	<small class="help-block" style="color:red;" id="mobileError"><?php echo $fMobileError;?></small>
 		                </div>
 						<button type="button" class="btn btn-default" <?php if($fMobileIsVerified ==1){?>disabled="disabled"<?php }?> id="ButtonCheckMobile" onclick="OpeMobileVerificationForm();"><?php echo $fVerifyMobileButtonLabel;?></button>
 						<br/><br/><br/>
 		                <div class="form-group">
 		                    <input type="tel" style="visibility:collapse;" class="form-control" placeholder="Τηλέφωνο σταθερό" name="TextBoxTelephone" id="TextBoxTelephone" maxlength="10" value="<?php echo $fPhone;?>" />
-		                </div>            			
+		                </div>     
+		
+       					 <div class="form-group">
+		                    <select class="form-control" placeholder="Επάγγελμα" name="ComboBoxProfession" id="ComboBoxProfession">
+								<option value="0" disabled selected>Επάγγελμα</option>
+								<?php
+									$sql = "SELECT `ID`,`Title` FROM `voter_registration_professions` ORDER BY `Title`";
+									$command = new MySqlCommand($connection,$sql);
+									$reader = $command->ExecuteReader();
+									while($reader->Read())
+									{
+										$selected = "";
+										if($fProfessionID == $reader->getValue(0))
+										{
+											$selected ='selected="selected"';
+										}
+								?>
+									<option <?php echo $selected;?> value="<?php echo $reader->getValue(0);?>"><?php echo $reader->getValue(1);?></option>
+								<?php
+									}
+									$reader->Close();
+								?>
+							</select>
+		                </div>    
             		</div>
             		<div class="col-sm-6">
             			<div id="map" style="width:100%;height:400px;"></div>
@@ -512,21 +624,174 @@
             	</div>         		      
 		        <br/>
 		        <div id="ErrorMsgAddress" class="alert alert-danger" style=""></div>		        
+            	<div class="row">	
+			        <div class="col-sm-3">
+						<select class="form-control" placeholder="Χώρα" name="ComboBoxCountry" id="ComboBoxCountry" onchange="CountryChanged();" >
+							<option <?php if($fSelectedCountryISO =="GR" ){ ?> selected="selected" <?php }?> value="GR">Ελλάδα</option>
+							<?php
+								$sql = "SELECT `iso`,`country` FROM `GeoPC_Countries` WHERE `iso`!='GR' ORDER BY `country`";
+								$command = new MySqlCommand($connection,$sql);
+								$reader = $command->ExecuteReader();
+								while($reader->Read())
+								{
+									$selected = "";
+									if($fCountryISO == $reader->getValue(0))
+									{
+										$selected ='selected="selected"';
+									}
+							?>
+								<option <?php echo $selected;?> value="<?php echo $reader->getValue(0);?>"><?php echo $reader->getValue(1);?></option>
+							<?php
+								}
+								$reader->Close();
+							?>
+						</select>      	
+					</div>
+					<div class="col-sm-3">
+						<select class="form-control" placeholder="Νομός" name="ComboBoxRegion" id="ComboBoxRegion" onchange="RegionChanged();">
+						<option value="0" disabled selected>Νομός</option>
+						<?php
+							if($fCountryISO=="GR")
+							{
+								$sql = "SELECT DISTINCT(`NOMOS`) FROM `YPES_DHMOI` ORDER BY `Nomos`";
+								$command = new MySqlCommand($connection,$sql);
+								$reader = $command->ExecuteReader();
+								while($reader->Read())
+								{
+									$selected = "";
+									if($fRegionCode == $reader->getValue(0))
+									{
+										$selected ='selected="selected"';
+									}
+							?>
+								<option <?php echo $selected;?> value="<?php echo $reader->getValue(0);?>"><?php echo $reader->getValue(0);?></option>
+							<?php
+								}
+								$reader->Close();
+							}
+							else
+							{
+								$sql = 'SELECT DISTINCT `name`,`code` FROM `GeoPC_NUTS` WHERE `iso`=? ORDER BY `name`';
+								$command = new MySqlCommand($connection,$sql);
+								$command->Parameters->setString(1,$fCountryISO);
+								$reader = $command->ExecuteReader();
+								while($reader->Read())
+								{
+									$selected = "";
+									if($fRegionCode == $reader->getValue(1))
+									{
+										$selected ='selected="selected"';
+									}
+							?>
+								<option <?php echo $selected;?> value="<?php echo $reader->getValue(1);?>"><?php echo $reader->getValue(0);?></option>
+							<?php
+								}
+								$reader->Close();
+							}
+						?>
+						</select>   
+						<?php
+							if($fRegionError!="")
+							{
+						?>
+						<small class="help-block" style="color:red;"><?php echo $fRegionError;?></small>
+						<?php
+							}
+						?>
+					</div>
+					
+					<?php
+						if($fCountryISO=="GR" && $fRegionCode!="")
+						{
+					?>
+					<div class="col-sm-6">
+	            		<select class="form-control" placeholder="Δήμος" name="ComboBoxMunicipality" id="ComboBoxMunicipality" onchange="MunicipalityChanged();">
+							<option value="0" disabled selected>Δήμος</option>
+							<?php
+								
+								$sql = "SELECT `ONOMA` FROM `YPES_DHMOTIKES_ENOTITES` WHERE `NOMOS`=? ORDER BY `ONOMA`";
+								$command = new MySqlCommand($connection,$sql);
+								$command->Parameters->setString(1,$fRegionCode);
+								$reader = $command->ExecuteReader();
+								while($reader->Read())
+								{
+									$selected = "";
+									if($fMunicipality== $reader->getValue(0))
+									{
+										$selected ='selected="selected"';
+									}
+							?>
+								<option <?php echo $selected;?>  value="<?php echo $reader->getValue(0);?>"><?php echo $reader->getValue(0);?></option>
+							<?php
+								}
+								$reader->Close();
+							?>
+						</select>      		
+						<?php
+							if($fMunicipalityError!="")
+							{
+						?>
+						<small class="help-block" id="municipalityError" style="color:red;"><?php echo $fMunicipalityError;?></small>
+						<?php
+							}
+						?>
+            		</div>
+            		<?php
+						}          		
+					?>	
+				</div>
+            	<br><br>
+            	
             	<div class="row">
+            		
             		<div class="form-group">
             			<div class="col-sm-6">
 							<input type="text" autocomplete="off"  class="form-control" name="TextBoxStreetName" id="TextBoxStreetName" name="StreetName" placeholder="Οδός"  value="<?php echo $fStreet;?>" />
+							<?php
+								if($fStreetError!="")
+								{
+								?>
+									<small class="help-block" style="color:red;"><?php echo $fStreetError;?></small>
+								<?php
+								}
+							?>
 						</div>
 						
 	            		<div class="col-sm-2">
 	            			<input type="text" autocomplete="off"  class="form-control" name="TextBoxStreetNumber" id="TextBoxStreetNumber" placeholder="Αριθμός"  value="<?php echo $fStreetNo;?>" />
+	            			<?php
+								if($fStreetNoError!="")
+								{
+								?>
+									<small class="help-block" style="color:red;"><?php echo $fStreetNoError;?></small>
+								<?php
+								}
+							?>
+
 	            		</div>	
 
 	            		<div class="col-sm-2">
 	            			<input type="text" autocomplete="off"  class="form-control" name="TextBoxArea" id="TextBoxArea" placeholder="Περιοχή"  value="<?php echo $fArea;?>" />
+	            			<?php
+								if($fAreaError!="")
+								{
+								?>
+									<small class="help-block" style="color:red;"><?php echo $fAreaError;?></small>
+								<?php
+								}
+							?>
 	            		</div>	
 	            		<div class="col-sm-2">
 	            			<input type="text" autocomplete="off"  class="form-control" name="TextBoxZipCode" id="TextBoxZipCode" placeholder="Τ.Κ." value="<?php echo $fZip;?>"  />
+	            			<?php
+								if($fZipError!="")
+								{
+								?>
+									<small class="help-block" style="color:red;"><?php echo $fZipError;?></small>
+								<?php
+								}
+							?>
+
 	            		</div>
             		</div>
             	</div> 
@@ -539,33 +804,6 @@
             		</div>
             	</div>
             	<br/>
-            	<div class="row">
-            		<div class="col-sm-6">
-            		<select class="form-control" placeholder="Δήμος" name="ComboBoxMunicipality" id="ComboBoxMunicipality"  onchange="GetCountyFromMunicipality();">
-						<option value="0" disabled selected>Δήμος</option>
-						
-						<?php
-							$sql = "SELECT `KOD_DHM`,`ONOMA` FROM `YPES_DHMOI` ORDER BY `ONOMA`";
-							$command = new MySqlCommand($connection,$sql);
-							$reader = $command->ExecuteReader();
-							while($reader->Read())
-							{
-								$selected = "";
-								if($fMunicipalityID == $reader->getValue(0))
-								{
-									$selected ='selected="selected"';
-								}
-						?>
-							<option <?php echo $selected;?> value="<?php echo $reader->getValue(0);?>"><?php echo $reader->getValue(1);?></option>
-						<?php
-							}
-							$reader->Close();
-						?>
-					</select>      		
-            		</div>	
-            		<div class="col-sm-6"><input type="text" class="form-control" name="TextBoxDivision" id="TextBoxDivision" placeholder="Νομός / Τομέας" readonly="readonly" style="background-color:#fffdf3;" value="<?php echo $fCounty;?>" /></div>
-		        </div>
-                <br/><br/>
                 <br/><br/>
 			    <div class="row">
 			    	<div class="col-sm-6"><button type="button" class="btn btn-danger btn-block" onclick="ResetData();return false;">Επιστροφή στην αρχική</button></div>
@@ -688,5 +926,19 @@
     </div>
   </div>
 <!-------------------------------------------------------------------------------------------------------------------------------------------->
+ <div class="modal fade" id="PleaseWaitDialog" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" align="center">Παρακαλώ περιμένετε</h4>
+        </div>
+        <div class="modal-body">
+         Παρακαλώ περιμένετε όσο επεξεργαζόμαστε τις παραμέτρους της διευθυνσης σας.
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

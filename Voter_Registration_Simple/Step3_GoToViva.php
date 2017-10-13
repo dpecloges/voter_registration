@@ -57,7 +57,6 @@ if(!$fVoterIsFriend)
 	if($reader->Read())
 	{
 		$voterInfoIsVerified = ($reader->getValue(0)==1);
-		print $reader->getValue(0);
 	}
 	$reader->Close();
 	

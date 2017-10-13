@@ -18,8 +18,8 @@
 	$fBirthYear    = 1986;*/
 
 	$fVoterIdFound = false;
-	$fRegistrationOption  = 0;
-	
+	$fRegistrationOption  = isset($_POST['RadioButtonRegistrationOption']) ? intval($_POST['RadioButtonRegistrationOption']) : 1;
+		
 	if(isset($_POST['TextBoxFirstName']))
 	{
 	
@@ -41,27 +41,35 @@
 		$userInputErrosFound = false;
 		if(mb_strlen($fFirstName) < 2)
 		{
-			$fFirstNameError = "Παρακαλούμε εισάγετε έγκυρο Όνομα! (τουλάχιστον 4 χαρακτήρες)";
+			$fFirstNameError = "Παρακαλούμε εισάγετε το όνομα σας όπως ακριβώς αναγράφεται στην αστυνομική σας ταυτότητα!";
 			$userInputErrosFound = true;
 		}
 		
 		if(mb_strlen($fLastName) < 2)
 		{
-			$fLastNameError = "Παρακαλούμε εισάγετε έγκυρο Επώνυμο! (τουλάχιστον 4 χαρακτήρες)";
+			$fLastNameError = "Παρακαλούμε εισάγετε το επώνυμο σας όπως ακριβώς αναγράφεται στην αστυνομική σας ταυτότητα!";
 			$userInputErrosFound = true;			
 		}
 		
 		if(mb_strlen($fFathersName) < 2)
 		{
-			$fFathersNameError = "Παρακαλούμε εισάγετε το Πατρώνυμο σας!";
+			$fFathersNameError = "Παρακαλούμε εισάγετε το Πατρώνυμο σας όπως ακριβώς αναγράφεται στην αστυνομική σας ταυτότητα!";
+			$userInputErrosFound = true;			
+		}
+			
+		if(mb_strlen($fMothersName) < 2)
+		{
+			$fMothersNameError = "Παρακαλούμε εισάγετε το Όνομα της Μητέρας σας πως ακριβώς αναγράφεται στην αστυνομική σας ταυτότητα!";
 			$userInputErrosFound = true;			
 		}
 		
-		if(mb_strlen($fMothersName) < 2)
+		if(mb_strlen($fBirthYear) < 2 || intval($fBirthYear)<10)
 		{
-			$fMothersNameError = "Παρακαλούμε εισάγετε το Όνομα της Μητέρας σας!";
+			$fBirthYearError = "Παρακαλούμε εισάγετε το έτος γέννησης σας!";
 			$userInputErrosFound = true;			
 		}
+
+
 		
 		if($userInputErrosFound )		
 		{
@@ -238,28 +246,34 @@
 		$('#TextBoxBirthYear')[0].oninput = function(){
 			RemoveCharactersThatAreNotNumbers($('#TextBoxBirthYear'));
 		};
+		
+		CheckRegistrationType();
 	});
 	
-
+	function CheckRegistrationType()
+	{
+		var val = $('#RadioButtonRegistrationOption:checked').val();
+  		if(val==1)
+  		{
+  			$('#FriendDisclaimer').show();
+  			$('#MemberDisclaimer').hide();
+  		}
+  		else
+  		{
+  			$('#FriendDisclaimer').hide();
+  			$('#MemberDisclaimer').show();
+  		}
+	}
+	
 	
 	function RestartProcess() { window.location = "/index.php"; }
 	function GoToStep2() 
 	{ 
-		<?php
-			if($fVoterIdFound && $fRegistrationOption==1)
-			{
-		?>
-				window.location = "/Step3.php?UniqueKey=<?php echo $fUniqueKey;?>";
-		<?php
-			}
-			else
-			{
-		?>
-				window.location = "/Step2.php?UniqueKey=<?php echo $fUniqueKey;?>";
-		<?php
-			}
-		?>
+		var option =$('#RadioButtonRegistrationOption:checked').val();
+		var url = "ChooseNextStepByType.php?UniqueKey=<?php echo $fUniqueKey;?>&IsFriend="+option ;
+		window.location = url ;
 	}
+	
 	<?php
 		if($fErrorCode>0)
 		{
@@ -300,19 +314,12 @@
         <p style="text-align: center; color: #f20d18; font-size: 1.5em;"><b>Για να μην περιμένετε στην ουρά!</b></p>
 		<div  style="width:800px; margin-left:auto;margin-right:auto;">
 			<br><br>
-			Συμπληρώστε την φόρμα εγγραφής, είναι μια απλή διαδικασία <b>τριών βημάτων</b>:
+			Συμπληρώστε την <b>φόρμα εγγραφής</b>:
 			<br><br>
-			<b>Βήμα 1ο</b> Βάλτε τα στοιχεία σας με ακρίβεια όπως είναι στην ταυτότητά σας, με κεφαλαία γράμματα.
-			<br>Aν έχετε δύο Επώνυμα βάλτε μόνο το πρώτο.
-			<br>Αφού γίνει η ταυτοποίηση με τον εκλογικό κατάλογο προχωρείστε στο επόμενο βήμα.<br>Θα πρέπει να έχετε πρόσβαση στο e-mail σας και να έχετε δίπλα σας το κινητό σας γιατί θα χρειαστεί να κάνετε επιβεβαίωση και στα δύο.
-			<br><br>
-			<b>Βήμα 2ο</b> Επιβεβαίωση e-mail και κινητού. <br>Επιβεβαιώστε το e-mail σας και το τηλέφωνό σας σύμφωνα με τις οδηγίες. 
-			<br>Σπάνια αλλά σε ορισμένα δίκτυα μπορεί να χρειαστεί να περιμένετε έως και 2′ για την παραλαβή του κωδικού.
-			<br><br>
-			<b>Βήμα 3ο</b> Πληρώστε την εγγραφή σας και εκτυπώστε την αίτηση που θα λάβετε στο Email σας μετά την πληρωμή. 	
+			Βάλτε τα στοιχεία σας με ακρίβεια όπως είναι στην ταυτότητά σας.<br>Aν έχετε δύο Επώνυμα βάλτε μόνο το πρώτο.
+			<br><br>Αφού γίνει η ταυτοποίηση με τον εκλογικό κατάλογο προχωρείστε στο επόμενο βήμα.<br>
 			<br><br>	
 		</div>
-        
         
         
         <div class="form-container">
@@ -337,27 +344,27 @@
                  <div class="form-group"> 
                     <div class="row">
 	                    <div class="col-sm-3">
-							<input class="form-control" autocomplete="off"  <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Έτος Γέννησης" name="TextBoxBirthYear" id="TextBoxBirthYear" value="<?php echo $fBirthYear;?>"  maxlength="4" style="width: 232px" /></div>
+							<input class="form-control" autocomplete="off"  <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Έτος Γέννησης" name="TextBoxBirthYear" id="TextBoxBirthYear" value="<?php echo $fBirthYear;?>"  maxlength="4" style="width: 232px" />
+							<small class="help-block" style="color:red;"><?php echo $fBirthYearError;?></small>
+						</div>
 					</div>
                 </div>
                 
-                 <div class="form-group"> 
+                <div class="form-group"> 
                     <div class="row">
-	                     <div class="col-sm-3"><input <?php if($fVoterIdFound){?> disabled="disabled"  <?php }?> <?php if($fRegistrationOption ==0){?> checked="checked"<?php }?> name="RadioButtonRegistrationOption" id="RadioButtonRegistrationOption" value="1" type="radio"  /> Επιθυμώ να εγγραφώ ώς <b>Φίλος</b></div>
+	                     <div class="col-sm-3"><input onclick="CheckRegistrationType();"  <?php if($fRegistrationOption ==1){?> checked="checked"<?php }?> name="RadioButtonRegistrationOption" id="RadioButtonRegistrationOption" value="1" type="radio" /> Επιθυμώ να εγγραφώ ώς <b>Φίλος</b></div>
 					</div>
 					<div class="row">
-						<div class="col-sm-9"><i>Μετά την επικύρωση των στοιχείων σας θα μεταφερθείτε στην υπηρεσία της Viva για πληρωμή του παραβόλου των 3ευρώ<br><br></i></div>
+						<div class="col-sm-9"><i>Μετά την επικύρωση των στοιχείων σας θα μεταφερθείτε στην υπηρεσία της Viva για πληρωμή του παραβόλου των &euro;3.00<br><br></i></div>
 					</div>
 
 					<div class="row">
-						 <div class="col-sm-3"><input <?php if($fVoterIdFound){?> disabled="disabled"  <?php }?> <?php if($fRegistrationOption ==1){?> checked="checked"<?php }?>  name="RadioButtonRegistrationOption" id="RadioButtonRegistrationOption" value="0"  type="radio" /> Επιθυμώ να εγγραφώ ώς <b>Μέλος</b></div>
+						 <div class="col-sm-3"><input onclick="CheckRegistrationType();"  <?php if($fRegistrationOption ==0){?> checked="checked"<?php }?>  name="RadioButtonRegistrationOption" id="RadioButtonRegistrationOption" value="0"  type="radio" /> Επιθυμώ να εγγραφώ ώς <b>Μέλος</b></div>
 					</div>
 					<div class="row">
-						<div class="col-sm-9"><i>Μετά την επικύρωση των στοιχείων σας θα σας ζητηθεί επιβεβαίωση στοιχείων επικοινωνίας πριν μεταφερθείτε στην υπηρεσία της Viva για πληρωμή του παραβόλου των 3ευρώ<br><br></i></div>
+						<div class="col-sm-9"><i>Μετά την επικύρωση των στοιχείων σας θα σας ζητηθεί επιβεβαίωση στοιχείων επικοινωνίας πριν μεταφερθείτε στην υπηρεσία της Viva για πληρωμή του παραβόλου των &euro;3.00<br><br></i></div>
 					</div>
-
                 </div>
-
                 
                 <div class="form-group"> 
                     <div class="row">
@@ -373,8 +380,6 @@
 						</div>
 					</div>
                 </div>
-
-
 
                 <div class="well" style="height:500px!important">
                     <span>* Ειδικός Εκλογικός Αριθμός <b>(Μάθε που ψηφίζεις)</b></span>
@@ -450,27 +455,22 @@
 					<div class="col-sm-6"><div class="btn btn-danger btn-block" onclick="RestartProcess();">Καθαρισμός φόρμας</div></div>
 					<div class="col-sm-6"><div class="btn btn-success btn-block" <?php if(!$fVoterIdFound){ ?> style="visibility:hidden;"<?php }?> onclick="GoToStep2();">Επόμενο βήμα</div></div>
 				</div>
+				
+				<div class="row">
+					<br>
+					<div id="FriendDisclaimer">
+						Υποβάλλοντας την παρούσα αίτηση για συμμετοχή στην ψηφοφορία για την ανάδειξη του επικεφαλής του νέου ενιαίου πολιτικού φορέα, παρέχω στην Ανεξάρτητη Επιτροπή Διαδικασιών και Δεοντολογίας (ΑΕΔΔ) τη συγκατάθεσή μου για χρήση και επεξεργασία των προσωπικών δεδομένων μου σύμφωνα με την ισχύουσα νομοθεσία (ν. 2472/1997). Και τούτο αποκλειστικά και μόνον στο πλαίσιο των ελέγχων που ενδέχεται να διεξαχθούν για την διακρίβωση της ταυτοπροσωπίας, καθώς και τυχόν εκλογικών παραβάσεων.
+					</div>
+					
+					<div id="MemberDisclaimer">
+						Δηλώνοντας την πρόθεσή μου να συμμετάσχω στη διαδικασία για την ίδρυση του νέου ενιαίου πολιτικού φορέα, παρέχω την συγκατάθεσή μου αφ’ ενός μεν στην Ανεξάρτητη Επιτροπή Διαδικασιών και Δεοντολογίας (ΑΕΔΔ) και, αφ’ ετέρου, στα προς τούτο επιφορτισμένα όργανα του υπό ίδρυση νέου πολιτικού φορέα, για χρήση και επεξεργασία των προσωπικών δεδομένων μου προς τον ανωτέρω σκοπό και για καταχώρησή τους στο μητρώο μελών του νέου πολιτικού φορέα. 
+					</div>
+				</div>
             </form>
         </div>
     </div>
     
-    <!--<div style="width:1000px;margin-left:auto;margin-right:auto;">
-		<div>
-			<br>
-			<font color="#a64d79"><span style="font-size:12.8px">&quot; Υποβάλλοντας 
-			αίτηση συμμετοχής στην εκλογική διαδικασία παρέχεται στην Ανεξάρτητη 
-			Επιτροπή Διαδικασιών &amp; Δεοντολογίας (ΑΕΔΔ) η συγκατάθεσή&nbsp; για χρήση 
-			και επεξεργασία των δεδομένων προσωπικού χαρακτήρα του αιτούντα για 
-			τις διαδικασίες συγκρότησης του νέου φορέα. Η υποβολή αίτησης 
-			συμμετοχής συνεπάγεται ρητή και ανεπιφύλακτη συναίνεση του αιτούντα 
-			για την καταχώρηση δεδομένων προσωπικού χαρακτήρα που τον αφορούν σε 
-			αρχείο, που θα τηρείται από τη ΑΕΔΔ, και την επεξεργασία αυτών των 
-			δεδομένων σύμφωνα με την εκάστοτε ισχύουσα νομοθεσία περί προστασίας 
-			προσωπικών δεδομένων&nbsp;και τους
-			<a href="https://dpekloges.gr/terms/" target="_blank">όρους χρήσης</a>.&quot;</span></font>
-		</div>
-		<br>
-    </div>-->
+   
 
   <!--------------------------------------------------------------- ERROR MODAL --------------------------------------------------------------->
   <div class="modal fade" id="ErrModal" role="dialog">
