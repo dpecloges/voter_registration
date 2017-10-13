@@ -671,7 +671,7 @@
 							}
 							else
 							{
-								$sql = 'SELECT DISTINCT `name`,`code` FROM `GeoPC_NUTS` WHERE `iso`=? ORDER BY `name`';
+								$sql = 'SELECT DISTINCT `name`,`code` FROM `GeoPC_ISO3166-2` WHERE `iso`=? ORDER BY `name`';
 								$command = new MySqlCommand($connection,$sql);
 								$command->Parameters->setString(1,$fCountryISO);
 								$reader = $command->ExecuteReader();
