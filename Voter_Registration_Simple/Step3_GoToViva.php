@@ -9,6 +9,8 @@ $fOfflinePaymentsEndsAt = strtotime('10-Nov-2017 20:59:59');
 $fDateTimeNow = time();  
 $fPaymentTimeOut =  $fOfflinePaymentsEndsAt - $fDateTimeNow;
 
+$fPayWithCash = $_POST['RadioPayment']==2;
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Check if user is friend and exists
@@ -94,7 +96,15 @@ $Source = 'Default'; // This will assign the transaction to the Source with Code
 $DisableCash = 'false';
 $DisablePayAtHome = 'false';
 $PaymentTimeOut  = $fPaymentTimeOut;
-$postargs = 'Amount='.urlencode($Amount).'&AllowRecurring='.$AllowRecurring.'&RequestLang='.$RequestLang.'&SourceCode='.$Source.'&DisableCash='.$DisableCash.'&DisablePayAtHome='.$DisablePayAtHome.'&PaymentTimeOut='.$fPaymentTimeOut;
+
+if(!$fPayWithCash)
+{
+	$DisableCash = 'true';
+	$DisablePayAtHome = 'true';
+
+}
+
+$postargs = 'Amount='.urlencode($Amount).'&AllowRecurring='.$AllowRecurring.'&RequestLang='.$RequestLang.'&SourceCode='.$Source.'&DisableCash=true&DisablePayAtHome=true&PaymentTimeOut='.$fPaymentTimeOut;
 
 // Get the curl session object
 $session = curl_init($request);
@@ -142,7 +152,14 @@ if ($resultObj->ErrorCode==0)
 	
 	
 	$connection->Close();
-	header('refresh: 0; url=http://demo.vivapayments.com/web/newtransaction.aspx?ref='.$orderId);
+	if(!$fPayWithCash)
+	{
+		header('refresh: 0; url=http://demo.vivapayments.com/web/newtransaction.aspx?ref='.$orderId);
+	}
+	else
+	{
+		header('refresh: 0; url=Step3_PayWithCash.php?UniqueKey='.$fInvoiceId );
+	}
 	exit;
 }
 else

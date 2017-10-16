@@ -2,59 +2,33 @@
 	session_start();
 	require_once("Classes/DBConnection.php"); 
 	
-	if(!isset($_GET['UniqueKey']))
-	{
-		header('refresh: 0; url=index.php');
-		exit;
-	}
-	
 	$fUniqueKey = $_GET['UniqueKey'];
 	
-	$fErrorCode = 0;
-	$fErrorDescription = "";
-	
-	// Check if voter is a friend
-	$fVoterIsFriend = false;
-	$fVoterExists = false;
-	$sql = "SELECT `IsFriend` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
-	$command = new MySQLCommand($connection, $sql);
-	$command->Parameters->setString(1,$fUniqueKey);
+	$sql = "SELECT `VivaOrderID`,`FirstName`,`LastName`,`FathersName`,`MothersName`,`BirthYear` FROM `voter_registration_temp` WHERE `UniqueKey`=?";
+	$command = new MySqlCommand($connection, $sql);
+	$command->Parameters->setString(1, $fUniqueKey);
 	$reader = $command->ExecuteReader();
 	if($reader->Read())
 	{
-		$fVoterExists = true;
-		$fVoterIsFriend = $reader->getValue(0)==1;
+		$fVivaOrderID = $reader->getValue(0);
+		
+		$fFirstName = $reader->getValue(1);
+		$fLastName = $reader->getValue(2);
+		$fFathersName = $reader->getValue(3);
+		$fMothersName = $reader->getValue(4);
+		$fBirthYear = $reader->getValue(5);
 	}
-	$reader->close();
-	
-	
-	if(!$fVoterExists )
-	{	
+	else
+	{
+		$reader->Close();
 		$connection->Close();
 		header('refresh: 0; url=index.php');
-		exit;
 	}
 	
-	if(!$fVoterIsFriend)
-	{
-		// Check if email and mobile are verified
-		$voterInfoIsVerified = false;
-		$sql = "SELECT `MobileIsVerified` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
-		$command = new MySQLCommand($connection, $sql);
-		$command->Parameters->setString(1,$fUniqueKey);
-		$reader = $command->ExecuteReader();
-		if($reader->Read())
-		{
-			$voterInfoIsVerified = ($reader->getValue(0)==1);
-		}
-		$reader->Close();
-		
-		if(!$voterInfoIsVerified || !$fVoterExists )
-		{
-			header('refresh: 0; url=Step2.php');
-			exit;
-		}
-	}
+	$reader->Close();
+	$connection->Close();
+
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -78,32 +52,6 @@
     <script src="assets/dist/js/framework/bootstrap.min.js"></script>
     <script src="assets/dist/js/language/el_GR.js"></script>   
     
-	<script type="text/javascript">
-		function ResetData()
-		{
-			<?php
-				if($fVoterIsFriend)
-				{
-			?>
-					window.location = "index.php";
-			<?php
-				}
-				else
-				{
-			?>
-					window.location = "Step2.php?UniqueKey=<?php echo $fUniqueKey;?>";
-			<?php
-				}
-			?>
-		}	
-		
-		function SubmitForm()
-		{
-			$('#PayPalForm').submit();
-		}
-		
-	</script>
-
     <style type="text/css">
     	.register-photo {padding: 0px!important;}
         #RegistrationForm .form-control-feedback {pointer-events: auto;}
@@ -117,36 +65,24 @@
 	        	<div class="row">
 	        		<div class="form-group">
 	        			<div  style="width:1200px;margin-left:auto;margin-right:auto;">
-	        				<br>
-	        				<br>
-	        				<br>
-	        				<br>
-	        				<div style="text-align:center">
-								<font color="#a64d79">Σας παρακαλούμε να 
-								πληρώσετε το παράβολο συμμετοχής&nbsp;</font></div>
-							<div style="text-align:center">
-								<font color="#a64d79"><b>€3.00</b></font></div>
-							<div style="text-align:center">
-								<font color="#a64d79">Η διαδικασία είναι απλή και κρατάει μερικά δευτερόλεπτα.&nbsp;</font></div>
-							<div style="text-align:center">
-								<font color="#a64d79">Καλή συνέχεια μέχρι τις εκλογές!&quot;</font></div>
-	        			</div>
-	        			
-	        			<div style="width:280px;margin-left:auto;margin-right:auto;">
-	        			<form action="Step3_GoToViva.php" method="post" id="PayPalForm" >
-	        				<div><input name="RadioPayment" value="1" type="radio" checked="checked" /> Πληρωμή με Κάρτα</div>
-	        				<div><input name="RadioPayment" value="2" type="radio" /> Πληρωμή με Μετρητά</div>
-							<input type="hidden" name="invoiceID" value="<?php echo $fUniqueKey;?>"/>
-	        			</form>
+	        			<br>
+	        			<br>
+	        				
+	        				Κωδικός Πληρωμής: <b><?php echo $fVivaOrderID;?></b><br><br>
+	        				
+	        				Όνομα: <?php echo $fFirstName;?><br>
+	        				Επώνυμο: <?php echo $fLastName;?><br>
+	        				Όνομα Πατέρα: <?php echo $fFathersName;?><br>
+	        				Όνομα Μητέρας: <?php echo $fMothersName;?><br>
+	        				Έτος Γέννησης: <?php echo $fBirthYear;?><br>
+	        				
+	        				
 	        			</div>
 	        		</div>
 	        	</div> 
 				<br>
 				<br>
-				<div class="row">
-					<div class="col-sm-6"><button type="button" class="btn btn-danger btn-block" onclick="ResetData();">Επιστροφή <?php if(!$fVoterIsFriend){?>στο Βήμα 2<?php }?></button></div>
-					<div class="col-sm-6"><button type="submit" class="btn btn-success btn-block" onclick="SubmitForm();">Πληρωμή</button></div>
-				</div> 
+				
         </div>
     </div>
 
