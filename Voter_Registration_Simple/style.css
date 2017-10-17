@@ -1,0 +1,63 @@
+﻿.GreenSearchButton {background-color: #4CAF50;border: none;color: white;padding: 8px 12px;text-align:center;text-decoration:none; display:inline-block;font-size: 16px;}
+
+.PaymentNotice{width:800px;margin-left:auto;margin-right:auto;padding-top:40px;font-size:16px;}
+
+.PaymentOptions{width:800px;margin-left:auto;margin-right:auto;}
+
+.PaymentOptions form{width:100%;margin-left:auto;margin-right:auto;}
+
+.PaymentOptions form .PaymentType{font-size:16px;font-weight:bold;padding-bottom:4px;width:100%;}
+
+.PayWithCashNotice{
+	font-size:14px;
+	width:800px;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+.PayWithCashNotice_Code{
+	padding-top:20px;
+	font-size:14px;
+	width:800px;
+	margin-left:auto;
+	margin-right:auto;
+	font-size:18px;
+}
+
+.PayWithCashNotice_Code b{
+	color:#3333CC;
+}
+
+.PayWithCashNotice_VoterInfo{
+	font-size:14px;
+	width:800px;
+	margin-left:auto;
+	margin-right:auto;
+	font-size:16px;
+
+}
+
+.PayWithCashNotice_WaysOfPayment{
+	padding-top:20px;
+	font-size:14px;
+	width:800px;
+	margin-left:auto;
+	margin-right:auto;
+	font-size:16px;
+}
+
+.PayWithCashNotice_WaysOfPayment table{
+	width:400px;
+	margin-left:auto;
+	margin-right:auto;
+	text-align:center
+}
+
+.PayWithCashNotice_WaysOfPayment table td{
+	padding:5px;
+}
+
+ #ButtonPrint *
+{
+    display: none !important;
+}

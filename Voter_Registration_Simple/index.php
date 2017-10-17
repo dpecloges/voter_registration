@@ -206,6 +206,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Εγγραφή</title> 
+    <link rel="stylesheet" href="style.css?ID=<?php echo time();?>">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
     <link rel="stylesheet" href="assets/css/Form-Select---Full-Date---Month-Day-Year.css">
@@ -216,6 +217,7 @@
     <link rel="stylesheet" href="assets/css/Registration-Form-with-Photo.css">
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/dist/css/formValidation.min.css">
+    
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="assets/dist/js/formValidation.min.js"></script>
@@ -384,9 +386,9 @@
                 <div class="well" style="height:500px!important">
                     <span>* Ειδικός Εκλογικός Αριθμός <b>(Μάθε που ψηφίζεις)</b></span>
                     
-                    <button class="btn btn-primary-small" type="button" id="ButtonFind" <?php if($fVoterIdFound){ ?> disabled="disabled" <?php }?> onclick="RegistrationForm.submit();">Αναζήτηση</button>
-                    <br />
-                    <br />
+                    <button class="GreenSearchButton" type="button" id="ButtonFind" <?php if($fVoterIdFound){ ?> disabled="disabled" <?php }?> onclick="RegistrationForm.submit();">Αναζήτηση</button>
+                    <br/>
+                    <br/>
                     <div class="row">
                         
                     </div>

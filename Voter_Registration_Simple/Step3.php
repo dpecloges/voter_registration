@@ -1,5 +1,4 @@
 <?php
-	session_start();
 	require_once("Classes/DBConnection.php"); 
 	
 	if(!isset($_GET['UniqueKey']))
@@ -55,6 +54,8 @@
 			exit;
 		}
 	}
+	
+	$connection->Close();
 ?>
 <!DOCTYPE html>
 <html>
@@ -62,6 +63,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Εγγραφή</title> 
+    <link rel="stylesheet" href="style.css?ID=<?php echo time();?>">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
     <link rel="stylesheet" href="assets/css/Form-Select---Full-Date---Month-Day-Year.css">
@@ -114,74 +116,31 @@
 <body>
     <div class="register-photo" style="background-color:white!important;">
         <div class="form-container">
-	        	<div class="row">
-	        		<div class="form-group">
-	        			<div  style="width:1200px;margin-left:auto;margin-right:auto;">
+        	<div class="row">
+        		<div class="form-group">
+    				<div class="PaymentNotice">
+    					Παρακαλούμε επιλέξτε τον τρόπο με τον οποίο θα θέλατε να πληρώσετε το παράβολο συμμετοχής, αξίας <b>€3.00</b>
+    					<br>
+    				</div>
+        			<div class="PaymentOptions">
+	        			<form action="Step3_GoToViva.php" method="post" id="PayPalForm">
+	        				<div class="PaymentType"><input name="RadioPayment" value="1" type="radio" checked="checked" /> Πληρωμή με Κάρτα</div>
+	        				<div>Θα μεταφερθείτε στο site της Viva για να πληρώσετε το παράβολο συμμετοχής με χρεωστική ή πιστωτική κάρτα</div>
 	        				<br>
 	        				<br>
-	        				<br>
-	        				<br>
-	        				<div style="text-align:center">
-								<font color="#a64d79">Σας παρακαλούμε να 
-								πληρώσετε το παράβολο συμμετοχής&nbsp;</font></div>
-							<div style="text-align:center">
-								<font color="#a64d79"><b>€3.00</b></font></div>
-							<div style="text-align:center">
-								<font color="#a64d79">Η διαδικασία είναι απλή και κρατάει μερικά δευτερόλεπτα.&nbsp;</font></div>
-							<div style="text-align:center">
-								<font color="#a64d79">Καλή συνέχεια μέχρι τις εκλογές!&quot;</font></div>
-	        			</div>
-	        			
-	        			<div style="width:280px;margin-left:auto;margin-right:auto;">
-	        			<form action="Step3_GoToViva.php" method="post" id="PayPalForm" >
-	        				<div><input name="RadioPayment" value="1" type="radio" checked="checked" /> Πληρωμή με Κάρτα</div>
-	        				<div><input name="RadioPayment" value="2" type="radio" /> Πληρωμή με Μετρητά</div>
+	        				<div class="PaymentType"><input name="RadioPayment" value="2" type="radio" /> Πληρωμή με Μετρητά</div>
+	        				<div>Θα εμφανιστούν οδηγίες πληρωμής με μετρητά στην οθόνη σας</div>
 							<input type="hidden" name="invoiceID" value="<?php echo $fUniqueKey;?>"/>
 	        			</form>
-	        			</div>
-	        		</div>
-	        	</div> 
-				<br>
-				<br>
-				<div class="row">
-					<div class="col-sm-6"><button type="button" class="btn btn-danger btn-block" onclick="ResetData();">Επιστροφή <?php if(!$fVoterIsFriend){?>στο Βήμα 2<?php }?></button></div>
-					<div class="col-sm-6"><button type="submit" class="btn btn-success btn-block" onclick="SubmitForm();">Πληρωμή</button></div>
-				</div> 
+        			</div>
+        		</div>
+        	</div> 
+			<br>
+			<div class="row">
+				<div class="col-sm-6"><button type="button" class="btn btn-danger btn-block" onclick="ResetData();">Επιστροφή <?php if(!$fVoterIsFriend){?>στο Βήμα 2<?php }?></button></div>
+				<div class="col-sm-6"><button type="submit" class="btn btn-success btn-block" onclick="SubmitForm();">Πληρωμή</button></div>
+			</div> 
         </div>
     </div>
-
-<!--------------------------------------------------------------- ERROR MODAL --------------------------------------------------------------->
-  <div class="modal fade" id="ErrModal" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title" align="center">Προσοχή!</h4>
-        </div>
-        <div class="modal-body">
-
-          <table style="height:100%!important;width:100%!important;border:0">
-            <tbody>
-              <tr style="height:20px"></tr>
-              <tr>
-                <td align="center">
-                  <div class="alert alert-danger">
-                    <span>
-                        <div class="row" id="ErrorMsg"></div>
-                    </span>
-                  </div>
-                </td>
-              </tr>
-              <tr style="height:10px"></tr>
-            </tbody>
-          </table>
-
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Κλείσιμο</button>
-        </div>
-      </div>
-    </div>
-  </div>
-<!-------------------------------------------------------------------------------------------------------------------------------------------->
 </body>
 </html>
