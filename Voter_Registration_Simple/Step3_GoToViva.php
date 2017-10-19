@@ -11,13 +11,15 @@ $fPaymentTimeOut =  $fOfflinePaymentsEndsAt - $fDateTimeNow;
 
 $fPayWithCash = $_POST['RadioPayment']==2;
 
+$fPaymentType = intval($_POST['RadioPayment']);
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Check if user is friend and exists
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 $fVoterIsFriend = false;
 $fVoterExists = false;
-$sql = "SELECT `IsFriend` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
+$sql = "SELECT `IsFriend`,`VoterID` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
 $command = new MySqlCommand($connection, $sql);
 $command->Parameters->setString(1, $fInvoiceId);
 $reader = $command->ExecuteReader();
@@ -25,6 +27,7 @@ if($reader->Read())
 {
 	$fVoterExists = true;
 	$fVoterIsFriend = ($reader->getValue(0)==1);
+	$fVoterID = $reader->getValue(1);
 }
 $reader->close();
 
@@ -78,16 +81,21 @@ if(!$fVoterIsFriend)
 
 
 // The POST URL and parameters
-$request =  'http://demo.vivapayments.com/api/orders';		// demo environment URL
-//$request =  'https://www.vivapayments.com/api/orders';	// production environment URL
-
-// Your merchant ID and API Key can be found in the 'Security' settings on your profile.
-/*$MerchantId = 'f8e9b647-9676-40e6-ba54-38030689d1ce';
-$APIKey = '=14=.|'; 	*/
+//$request =  'http://demo.vivapayments.com/api/orders';		// demo environment URL
+$request =  'https://www.vivapayments.com/api/orders';	// production environment URL
 
 
 //Set the Payment Amount
 $Amount = 300;	// Amount in cents
+
+if($_POST['RadioButtonPaymentValue']==1)
+{
+	$Amount = 300;
+}
+else
+{
+	$Amount = floatval($_POST['TextBoxValue'])*100;
+}
 
 //Set some optional parameters (Full list available here: https://github.com/VivaPayments/API/wiki/Optional-Parameters)
 $AllowRecurring = 'false'; // This flag will prompt the customer to accept recurring payments in tbe future.
@@ -96,6 +104,7 @@ $Source = 'Default'; // This will assign the transaction to the Source with Code
 $DisableCash = 'false';
 $DisablePayAtHome = 'false';
 $PaymentTimeOut  = $fPaymentTimeOut;
+$CustomerTrns = 'Κωδικός Προεγγραφής: '.$fVoterID;
 
 if(!$fPayWithCash)
 {
@@ -104,7 +113,7 @@ if(!$fPayWithCash)
 
 }
 
-$postargs = 'Amount='.urlencode($Amount).'&AllowRecurring='.$AllowRecurring.'&RequestLang='.$RequestLang.'&SourceCode='.$Source.'&DisableCash=true&DisablePayAtHome=true&PaymentTimeOut='.$fPaymentTimeOut;
+$postargs = 'Amount='.urlencode($Amount).'&AllowRecurring='.$AllowRecurring.'&RequestLang='.$RequestLang.'&SourceCode='.$Source.'&DisableCash=true&DisablePayAtHome=true&PaymentTimeOut='.$fPaymentTimeOut."&CustomerTrns=".$CustomerTrns;
 
 // Get the curl session object
 $session = curl_init($request);
@@ -134,6 +143,7 @@ try
 	{
 		preg_match('#^HTTP/1.(?:0|1) [\d]{3} (.*)$#m', $resHeader, $match);
 				throw new Exception("API Call failed! The error was: ".trim($match[1]));
+				exit;
 	}
 } 
 catch( Exception $e ) 
@@ -144,17 +154,20 @@ if ($resultObj->ErrorCode==0)
 {	//success when ErrorCode = 0
 	$orderId = $resultObj->OrderCode;
 	
-	$sql = "UPDATE `voter_registration_temp` SET `VivaOrderID`=? WHERE `UniqueKey`=?";
+	$sql = "UPDATE `voter_registration_temp` SET `VivaOrderID`=?,`PaymentType`=?,`PaymentValue`=? WHERE `UniqueKey`=?";
 	$command = new MySqlCommand($connection,$sql);
 	$command->Parameters->setInteger(1,$orderId);
-	$command->Parameters->setString(2,$fInvoiceId);
+	$command->Parameters->setInteger(2,$fPaymentType);
+	$command->Parameters->setDouble(3,$Amount);
+	$command->Parameters->setString(4,$fInvoiceId);
+	
 	$command->ExecuteQuery();
 	
 	
 	$connection->Close();
 	if(!$fPayWithCash)
 	{
-		header('refresh: 0; url=http://demo.vivapayments.com/web/newtransaction.aspx?ref='.$orderId);
+		header('refresh: 0; url=https://www.vivapayments.com/web/newtransaction.aspx?ref='.$orderId);
 	}
 	else
 	{

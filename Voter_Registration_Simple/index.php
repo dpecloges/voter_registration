@@ -205,6 +205,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+
     <title>Εγγραφή</title> 
     <link rel="stylesheet" href="style.css?ID=<?php echo time();?>">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -308,21 +310,22 @@
         #RegistrationForm .form-control-feedback { pointer-events: auto;}
         #RegistrationForm .form-control-feedback:hover { cursor: pointer;}
     </style>
+    
+    <?php include ("lib/config/analytics/php");?>
+    
 </head>
 <body>
     
     <div class="register-photo" style="background-color:white!important;">
-        <p style="text-align: center; color: #f20d18; font-size: 3em;"><b>ΠΡΟΕΓΓΡΑΦΕΙΤΕ</b></p>
-        <p style="text-align: center; color: #f20d18; font-size: 1.5em;"><b>Για να μην περιμένετε στην ουρά!</b></p>
-		<div  style="width:800px; margin-left:auto;margin-right:auto;">
-			<br><br>
-			Συμπληρώστε την <b>φόρμα εγγραφής</b>:
-			<br><br>
-			Βάλτε τα στοιχεία σας με ακρίβεια όπως είναι στην ταυτότητά σας.<br>Aν έχετε δύο Επώνυμα βάλτε μόνο το πρώτο.
-			<br><br>Αφού γίνει η ταυτοποίηση με τον εκλογικό κατάλογο προχωρείστε στο επόμενο βήμα.<br>
-			<br><br>	
-		</div>
         
+        <div class="form-group"> 
+	        <div class="row"><p style="text-align: center; color: #f20d18; font-size: 3em;"><b>ΠΡΟΕΓΓΡΑΦΕΙΤΕ</b></p></div>
+	        <div class="row"><p style="text-align: center; color: #f20d18; font-size: 1.5em;"><b>Για να μην περιμένετε στην ουρά!</b></p></div>
+	        <div class="row"><p style="text-align: center;">Συμπληρώστε την <b>φόρμα εγγραφής</b></p></div>
+	        <div class="row"><p style="text-align: center;">Βάλτε τα στοιχεία σας με ακρίβεια όπως είναι στην ταυτότητά σας.<br>Aν έχετε δύο Επώνυμα βάλτε μόνο το πρώτο.</div>
+			<div class="row"><p style="text-align: center;">Αφού γίνει η ταυτοποίηση με τον εκλογικό κατάλογο προχωρείστε στο επόμενο βήμα.</p></div>
+		</div>
+	
         
         <div class="form-container">
             <form method="post" action="index.php#RegistrationForm" id="RegistrationForm" name="RegistrationForm<?php echo time();?>">
@@ -354,14 +357,14 @@
                 
                 <div class="form-group"> 
                     <div class="row">
-	                     <div class="col-sm-3"><input onclick="CheckRegistrationType();"  <?php if($fRegistrationOption ==1){?> checked="checked"<?php }?> name="RadioButtonRegistrationOption" id="RadioButtonRegistrationOption" value="1" type="radio" /> Επιθυμώ να εγγραφώ ώς <b>Φίλος</b></div>
+	                     <div class="col-sm-9"><input onclick="CheckRegistrationType();"  <?php if($fRegistrationOption ==1){?> checked="checked"<?php }?> name="RadioButtonRegistrationOption" id="RadioButtonRegistrationOption" value="1" type="radio" /> Επιθυμώ να εγγραφώ ώς <b>Φίλος</b></div>
 					</div>
 					<div class="row">
 						<div class="col-sm-9"><i>Μετά την επικύρωση των στοιχείων σας θα μεταφερθείτε στην υπηρεσία της Viva για πληρωμή του παραβόλου των &euro;3.00<br><br></i></div>
 					</div>
 
 					<div class="row">
-						 <div class="col-sm-3"><input onclick="CheckRegistrationType();"  <?php if($fRegistrationOption ==0){?> checked="checked"<?php }?>  name="RadioButtonRegistrationOption" id="RadioButtonRegistrationOption" value="0"  type="radio" /> Επιθυμώ να εγγραφώ ώς <b>Μέλος</b></div>
+						 <div class="col-sm-9"><input onclick="CheckRegistrationType();"  <?php if($fRegistrationOption ==0){?> checked="checked"<?php }?>  name="RadioButtonRegistrationOption" id="RadioButtonRegistrationOption" value="0"  type="radio" /> Επιθυμώ να εγγραφώ ώς <b>Μέλος</b></div>
 					</div>
 					<div class="row">
 						<div class="col-sm-9"><i>Μετά την επικύρωση των στοιχείων σας θα σας ζητηθεί επιβεβαίωση στοιχείων επικοινωνίας πριν μεταφερθείτε στην υπηρεσία της Viva για πληρωμή του παραβόλου των &euro;3.00<br><br></i></div>
@@ -383,75 +386,68 @@
 					</div>
                 </div>
 
-                <div class="well" style="height:500px!important">
+                <div class="well" style="min-height:500px!important">
                     <span>* Ειδικός Εκλογικός Αριθμός <b>(Μάθε που ψηφίζεις)</b></span>
-                    
                     <button class="GreenSearchButton" type="button" id="ButtonFind" <?php if($fVoterIdFound){ ?> disabled="disabled" <?php }?> onclick="RegistrationForm.submit();">Αναζήτηση</button>
                     <br/>
                     <br/>
-                    <div class="row">
-                        
-                    </div>
+                    <div class="row">   </div>
                     <div class="row">&nbsp;</div>
                     <div class="row">&nbsp;</div>
-					<div class="row">
 						<?php 
 							if($fVoterID != "")
 							{
 						?>
-						<div class="col-sm-12">
-							<div class="col-sm-12">
-								<div class="row">
-									<div class="col-sm-3">Ειδικός Εκλογικός Αριθμός:</div>
-									<div class="col-sm-9"><b><?php echo $fVoterID;?></b></div>
-								</div>
-								<div class="row">&nbsp;</div>
-								<div class="row">
-									<div class="col-sm-3">Αριθμός Δημοτολογίου:</div>
-									<div class="col-sm-9"><b><?php echo $fArithmosDimotologiou;?></b></div>
-								</div>
-								<div class="row">&nbsp;</div>
-								<div class="row">
-									<div class="col-sm-3">Όνομα Πατέρα:</div>
-									<div class="col-sm-9"><b><?php echo $fFathersName;?></b></div>
-								</div>
-								<div class="row">
-									<div class="col-sm-3">Όνομα Μητέρας: </div>
-									<div class="col-sm-9"><b><?php echo $fMothersName;?></b></div>
-								</div>
-								<div class="row">&nbsp;</div>
-								<div class="row">
-									<div class="col-sm-3">Δήμος:</div>
-									<div class="col-sm-9"><b><?php echo $fDhmos;?></b></div>
-								</div>
-								<div class="row">
-									<div class="col-sm-3">Δημοτική Ενότητα:</div>
-									<div class="col-sm-9"><b><?php echo $fDimotikiEnotita;?></b></div>
-								</div>
-								<div class="row">&nbsp;</div>
-								<div class="row">
-									<div class="col-sm-3">Εκλογική Περιφέρεια:</div>
-									<div class="col-sm-9"><b><?php echo $fEklogikhPerifereia ;?></b></div>
-								</div>
-								<div class="row">&nbsp;</div>
-								<div class="row">
-									<div class="col-sm-3">Περιφερειακή Ενότητα:</div>
-									<div class="col-sm-9"><b><?php echo $fPeriferiakiEnothta ;?></b></div>
-								</div>
-								<div class="row">
-									<div class="col-sm-3">Περιφέρεια:</div>
-									<div class="col-sm-9"><b><?php echo $fPeriferia ;?></b></div>
-								</div>
-								<div class="row">
-									<div class="col-sm-3">Νομός:</div>
-									<div class="col-sm-9"><b><?php echo $fNomos ;?></b></div>
-								</div>
+							<div class="row">
+								<div class="col-sm-3">Ειδικός Εκλογικός Αριθμός:</div>
+								<div class="col-sm-9"><b><?php echo $fVoterID;?></b></div>
 							</div>
-						</div>
+							<div class="row">&nbsp;</div>
+							<div class="row">
+								<div class="col-sm-3">Αριθμός Δημοτολογίου:</div>
+								<div class="col-sm-9"><b><?php echo $fArithmosDimotologiou;?></b></div>
+							</div>
+							<div class="row">&nbsp;</div>
+							<div class="row">
+								<div class="col-sm-3">Όνομα Πατέρα:</div>
+								<div class="col-sm-9"><b><?php echo $fFathersName;?></b></div>
+							</div>
+							<div class="row">
+								<div class="col-sm-3">Όνομα Μητέρας: </div>
+								<div class="col-sm-9"><b><?php echo $fMothersName;?></b></div>
+							</div>
+							<div class="row">&nbsp;</div>
+							<div class="row">
+								<div class="col-sm-3">Δήμος:</div>
+								<div class="col-sm-9"><b><?php echo $fDhmos;?></b></div>
+							</div>
+							<div class="row">
+								<div class="col-sm-3">Δημοτική Ενότητα:</div>
+								<div class="col-sm-9"><b><?php echo $fDimotikiEnotita;?></b></div>
+							</div>
+							<div class="row">&nbsp;</div>
+							<div class="row">
+								<div class="col-sm-3">Εκλογική Περιφέρεια:</div>
+								<div class="col-sm-9"><b><?php echo $fEklogikhPerifereia ;?></b></div>
+							</div>
+							<div class="row">&nbsp;</div>
+							<div class="row">
+								<div class="col-sm-3">Περιφερειακή Ενότητα:</div>
+								<div class="col-sm-9"><b><?php echo $fPeriferiakiEnothta ;?></b></div>
+							</div>
+							<div class="row">
+								<div class="col-sm-3">Περιφέρεια:</div>
+								<div class="col-sm-9"><b><?php echo $fPeriferia ;?></b></div>
+							</div>
+							<div class="row">
+								<div class="col-sm-3">Νομός:</div>
+								<div class="col-sm-9"><b><?php echo $fNomos ;?></b></div>
+							</div>
+							
 					<?php
 						}
 					?>		
-					</div>
+					
                 </div>
 				<div class="row">
 					<div class="col-sm-6"><div class="btn btn-danger btn-block" onclick="RestartProcess();">Καθαρισμός φόρμας</div></div>

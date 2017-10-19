@@ -4,7 +4,7 @@
 	
 	$fUniqueKey = $_GET['UniqueKey'];
 	
-	$sql = "SELECT `VivaOrderID`,`FirstName`,`LastName`,`FathersName`,`MothersName`,`BirthYear`,`VoterID` FROM `voter_registration_temp` WHERE `UniqueKey`=?";
+	$sql = "SELECT `VivaOrderID`,`FirstName`,`LastName`,`FathersName`,`MothersName`,`BirthYear`,`VoterID`,`PaymentValue` FROM `voter_registration_temp` WHERE `UniqueKey`=?";
 	$command = new MySqlCommand($connection, $sql);
 	$command->Parameters->setString(1, $fUniqueKey);
 	$reader = $command->ExecuteReader();
@@ -18,6 +18,7 @@
 		$fMothersName = $reader->getValue(4);
 		$fBirthYear = $reader->getValue(5);
 		$fVoterID =  $reader->getValue(6);
+		$fPaymentValue = $reader->GetValue(7)/100;
 	}
 	else
 	{
@@ -60,6 +61,9 @@
         #RegistrationForm .form-control-feedback:hover {cursor: pointer;}
     </style>
     
+     <?php include ("lib/config/analytics/php");?>
+
+    
     <script type="text/javascript">
     	function PrintDocument()
     	{
@@ -80,11 +84,13 @@
         			<br>
         			
         				<div class="PayWithCashNotice">
-        					Η πρόθεση συμμετοχής σας στις εκλογές έχει καταγραφεί. Για να μπορέσετε να αποκτήσετε δικαίωμα ψήφου θα πρέπει να εξοφλήσετε των παρακάτω κωδικό πληρωμής
+        					Η πρόθεση συμμετοχής σας στις εκλογές έχει καταγραφεί. Για να μπορέσετε να αποκτήσετε δικαίωμα ψήφου θα πρέπει να εξοφλήσετε τον παρακάτω κωδικό πληρωμής
         				</div>
         				
         				<div class="PayWithCashNotice_Code">
-        					Κωδικός Πληρωμής: <b><?php echo $fVivaOrderID;?></b><br><br>
+        					Κωδικός Πληρωμής: <b><?php echo $fVivaOrderID;?></b><br>
+        					Ποσό Πληρωμής:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&euro;<?php echo number_format($fPaymentValue,2);?></b>
+        					<br><br>
         				</div>
 						
 						<div class="PayWithCashNotice_VoterInfo">
@@ -118,14 +124,12 @@
 									<td><img src="https://www.vivapayments.com/content/img/VivaSpots/logos/3354082f-b6fe-42db-a7c3-45bc2866cdb6.png"></td>
 									<td><img src="https://www.vivapayments.com/content/img/VivaSpots/logos/bce797e2-54b9-46e9-9686-42e5825d02cb.png"></td>
 								</tr>
-							
 							</table>
 							<table>
 								<tr>
 									<td><img src="https://www.vivapayments.com/content/img/VivaSpots/logos/dbc3e8ca-d1c2-4485-9226-8ff64d10b18e.png"></td>
 								</tr>
 							</table>
-							
 							<center>
 							<br>
 								<input id="ButtonPrint" type="button" onclick="PrintDocument();" value="Πατήστε εδώ για εκτύπωση">

@@ -81,6 +81,28 @@
     <script src="assets/dist/js/language/el_GR.js"></script>   
     
 	<script type="text/javascript">
+	
+		$(document).ready(function() {
+			$('#TextBoxValue').hide();
+		});
+		
+		
+		function Change()
+		{
+			var value = $('#RadioButtonPaymentValue:checked').val();
+			if(value ==2)
+			{
+				$('#TextBoxValue').show();
+			}
+			else
+			{
+				$('#TextBoxValue').hide();
+
+			}
+
+		}
+
+	
 		function ResetData()
 		{
 			<?php
@@ -111,6 +133,11 @@
         #RegistrationForm .form-control-feedback {pointer-events: auto;}
         #RegistrationForm .form-control-feedback:hover {cursor: pointer;}
     </style>
+    
+    <?php include ("lib/config/analytics/php");?>
+
+    
+    
 </head>
 
 <body>
@@ -119,11 +146,17 @@
         	<div class="row">
         		<div class="form-group">
     				<div class="PaymentNotice">
-    					Παρακαλούμε επιλέξτε τον τρόπο με τον οποίο θα θέλατε να πληρώσετε το παράβολο συμμετοχής, αξίας <b>€3.00</b>
+    					Παρακαλούμε επιλέξτε τον τρόπο με τον οποίο θα θέλατε να πληρώσετε το παράβολο συμμετοχής
     					<br>
     				</div>
         			<div class="PaymentOptions">
 	        			<form action="Step3_GoToViva.php" method="post" id="PayPalForm">
+	        				
+	        				<div><input id="RadioButtonPaymentValue" name="RadioButtonPaymentValue" value="1" onclick="Change();" checked="checked" type="radio" /> Παράβολο &euro; 3.00</div>
+	        				<div><input id="RadioButtonPaymentValue" name="RadioButtonPaymentValue" value="2" onclick="Change();" type="radio" /> Άλλο Ποσό	</div>
+	        				<div><input id="TextBoxValue" name="TextBoxValue" placeholder="Συμπληρώστε το ποσό που θέλετε σε ευρώ" type="text" style="width: 338px" /></div>
+	        				<div>&nbsp;</div>
+	        				
 	        				<div class="PaymentType"><input name="RadioPayment" value="1" type="radio" checked="checked" /> Πληρωμή με Κάρτα</div>
 	        				<div>Θα μεταφερθείτε στο site της Viva για να πληρώσετε το παράβολο συμμετοχής με χρεωστική ή πιστωτική κάρτα</div>
 	        				<br>

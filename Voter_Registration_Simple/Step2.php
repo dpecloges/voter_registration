@@ -74,7 +74,12 @@
 				{
 					$fZipError = 'Ο Τ.Κ είναι απαραίτητος!';
 					$addressIsValid = false;
-				}			
+				}	
+				else if(strlen($fZip)<=4)
+				{
+					$fZipError = 'Λάθος Τ.Κ!';
+					$addressIsValid = false;
+				}
 			}
 			else
 			{
@@ -95,6 +100,13 @@
 					$fZipError = 'Ο Τ.Κ είναι απαραίτητος!';
 					$addressIsValid = false;
 				}	
+				else if(strlen($fZip)<=4)
+				{
+					$fZipError = 'Λάθος Τ.Κ!';
+					$addressIsValid = false;
+
+				}
+				
 				
 				if($fArea =="")
 				{
@@ -227,8 +239,11 @@
 
     
     <!-- Google Map Scripts -->
-    <script type="text/javascript" src="js/StepFormsJS/Step2_GoogleMap.js"></script>
+    <script type="text/javascript" src="js/StepFormsJS/Step2_GoogleMap.js?ID=<?php echo time();?>"></script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=<?php echo My_Google_API_Key;?>&libraries=places&language=el&callback=GoogleMapLoaded"></script>
+    
+    <?php include ("lib/config/analytics/php");?>
+
    
     <!--------------------------->
     
@@ -285,22 +300,25 @@
 		
 		function ShowAddressOnMapAccordingToUserInput()
 		{
+		
 			var country = $("#ComboBoxCountry :selected").text();
 
 			if($("#NoNumbersAddress").is(':checked'))
 			{
 				if($('#TextBoxStreetName').val()!="" &&  $('#TextBoxZipCode').val()!="" && $('#TextBoxZipCode').val().length>4)
 				{
-					var address = $('#TextBoxStreetName').val()+ ' ' + $('#TextBoxStreetNumber').val() +"," +  $('#TextBoxZipCode').val() +"," + country ;
-					ShowAddressOnGoogleMap(address);
+					v//ar address = $('#TextBoxStreetName').val()+ ' ' + $('#TextBoxStreetNumber').val() +"," +  $('#TextBoxZipCode').val() +"," + country ;
+					var address =   $('#TextBoxZipCode').val() +"," +country;
+					ShowAddressOnGoogleMap(address,false);
 				}
 			}
 			else
 			{
 				if($('#TextBoxStreetName').val()!="" && $('#TextBoxStreetNumber').val() !="" &&  $('#TextBoxZipCode').val()!="" && $('#TextBoxZipCode').val().length>4)
 				{
-					var address = $('#TextBoxStreetName').val()+ ' ' + $('#TextBoxStreetNumber').val() +"," +  $('#TextBoxZipCode').val() +"," +country;
-					ShowAddressOnGoogleMap(address);
+					//var address = $('#TextBoxStreetName').val()+ ' ' + $('#TextBoxStreetNumber').val() +"," +  $('#TextBoxZipCode').val() +"," +country;
+					var address =   $('#TextBoxZipCode').val() +"," +country;
+					ShowAddressOnGoogleMap(address,false);
 				}
 			}
 		}
