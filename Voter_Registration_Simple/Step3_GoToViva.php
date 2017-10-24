@@ -125,7 +125,7 @@ if(!$fPayWithCash)
 
 }
 
-$postargs = 'Amount='.urlencode($Amount).'&AllowRecurring='.$AllowRecurring.'&RequestLang='.$RequestLang.'&SourceCode='.$Source.'&DisableCash=true&DisablePayAtHome=true&PaymentTimeOut='.$fPaymentTimeOut."&CustomerTrns=".$CustomerTrns;
+$postargs = 'Amount='.urlencode($Amount).'&AllowRecurring='.$AllowRecurring.'&RequestLang='.$RequestLang.'&SourceCode='.$Source.'&DisableCash='.$DisableCash.'&DisablePayAtHome=true&PaymentTimeOut='.$fPaymentTimeOut."&CustomerTrns=".$CustomerTrns;
 
 // Get the curl session object
 $session = curl_init($request);

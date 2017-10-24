@@ -617,7 +617,7 @@
 		                </div>
 		                <br/><br/><br/>
 		                <div class="form-group">
-		                    <input type="tel" class="form-control" placeholder="* Τηλέφωνο κινητό" name="TextBoxMobile" id="TextBoxMobile" maxlength="11" value="<?php echo $fMobilePhone;?>" />
+		                    <input type="tel" class="form-control" placeholder="* Τηλέφωνο κινητό" name="TextBoxMobile" id="TextBoxMobile" maxlength="20" value="<?php echo $fMobilePhone;?>" />
 		                	<small class="help-block" style="color:red;" id="mobileError"><?php echo $fMobileError;?></small>
 		                </div>
 						<button type="button" class="btn btn-default" <?php if($fMobileIsVerified ==1){?>disabled="disabled"<?php }?> id="ButtonCheckMobile" onclick="OpeMobileVerificationForm();"><?php echo $fVerifyMobileButtonLabel;?></button>
