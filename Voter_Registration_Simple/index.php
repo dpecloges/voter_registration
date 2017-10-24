@@ -18,12 +18,12 @@
 	$fBirthYear    = 1986;*/
 
 	$fVoterIdFound = false;
-	$fRegistrationOption  = isset($_POST['RadioButtonRegistrationOption']) ? intval($_POST['RadioButtonRegistrationOption']) : 1;
-		
+	$fRegistrationOption  = isset($_POST['RadioButtonRegistrationOption']) ? intval($_POST['RadioButtonRegistrationOption']) : -1;
+	
 	if(isset($_POST['TextBoxFirstName']))
 	{
 	
-		$fCaptchaIsVerified = $fGoogleReCaptcha->Verify($_POST['g-recaptcha-response']);		
+		$fCaptchaIsVerified = $fGoogleReCaptcha->Verify($_POST['g-recaptcha-response'],$fRecaptchaSecretKey);		
 	
 		$fFirstName     = trim($_POST['TextBoxFirstName']);
 		$fLastName      = trim($_POST['TextBoxLastName']);
@@ -31,8 +31,26 @@
 		$fMothersName   = trim($_POST['TextBoxMothersName']);
 		$fBirthYear     = trim($_POST['TextBoxBirthYear']);
 		
+		
+		
+		
 		// Friend or Member ?
-		$fRegistrationOption = intval($_POST['RadioButtonRegistrationOption']);
+		if(isset($_POST['RadioButtonRegistrationOption0']))
+		{
+			$fRegistrationOption = intval($_POST['RadioButtonRegistrationOption0']);
+		}
+		else if(isset($_POST['RadioButtonRegistrationOption1']))
+		{
+			$fRegistrationOption = intval($_POST['RadioButtonRegistrationOption1']);
+		}
+		else
+		{
+			$fRegistrationOption = -1;
+		}
+		
+		
+		$fIDDocumentType = intval($_POST['ComboBoxIDDocumentType']);
+		$fIDDocumentNumber = $_POST['TextBoxIDDocumentNumber'];
 		
 
 		// Step 1 - Validate input data
@@ -83,25 +101,30 @@
 				$fErrorCode = 104;
 				$fErrorDescription = 'Το όνομα σας περιέχει λατινικούς ή ειδικούς χαρακτήρες!';
 			}
-			elseif(!$fTextHelper->CheckIfStringContainsOnlyGreekCapitalCharacters($fLastName ))
+			else if(!$fTextHelper->CheckIfStringContainsOnlyGreekCapitalCharacters($fLastName ))
 			{
 				$fErrorCode = 105;
 				$fErrorDescription = 'Το επώνυμο σας περιέχει λατινικούς ή ειδικούς χαρακτήρες!';
 			}
-			elseif(!$fTextHelper->CheckIfStringContainsOnlyGreekCapitalCharacters($fFathersName ))
+			else if(!$fTextHelper->CheckIfStringContainsOnlyGreekCapitalCharacters($fFathersName ))
 			{
 				$fErrorCode = 106;
 				$fErrorDescription = 'Το πατρώνυμο σας περιέχει λατινικούς ή ειδικούς χαρακτήρες!';
 			}
-			elseif($fBirthYear<1900)
+			else if($fBirthYear<1900)
 			{
 				$fErrorCode = 107;
 				$fErrorDescription = 'Δεν έχετε συμπληρώσει το έτος γέννησης σας!';
 			}
-			elseif(!$fCaptchaIsVerified)
+			else if(!$fCaptchaIsVerified)
 			{
 				$fErrorCode = 108;
 				$fErrorDescription = 'Δεν έχετε επαληθέυσει τον κωδικό ασφαλείας!';
+			}
+			else if($fRegistrationOption==-1)
+			{
+				$fErrorCode = 109;
+				$fErrorDescription = 'Δεν έχετε αποδεχθεί τους όρους εγγραφής!';
 			}
 		}
 
@@ -157,7 +180,7 @@
 					
 					// Write voter to temp
 				    $fUniqueKey = md5(time().$fLastName.$$fMothersName.rand(1,1000));
-					$sql = "INSERT INTO `voter_registration_temp` (`UniqueKey`,`IsFriend`,`FirstName`,`LastName`,`FathersName`,`MothersName`,`BirthYear`,`VoterID`,`ArithmosDimotologiou`,`Dhmos`,`DhmotikhEnothta`,`EklogikhPerifereia`,`PerifereiakiEnothta`,`Perifereia`,`Nomos`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+					$sql = "INSERT INTO `voter_registration_temp` (`UniqueKey`,`IsFriend`,`FirstName`,`LastName`,`FathersName`,`MothersName`,`BirthYear`,`VoterID`,`ArithmosDimotologiou`,`Dhmos`,`DhmotikhEnothta`,`EklogikhPerifereia`,`PerifereiakiEnothta`,`Perifereia`,`Nomos`,`IDDocumentType`,`IDDocumentNumber`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 					$command = new MySQLCommand($connection, $sql);
 					$command->Parameters->setString(1, $fUniqueKey);
 					$command->Parameters->setInteger(2, $fRegistrationOption);
@@ -175,6 +198,9 @@
 					$command->Parameters->setString(13, $fPeriferiakiEnothta );
 					$command->Parameters->setString(14, $fPeriferia );
 					$command->Parameters->setString(15, $fNomos );
+					
+					$command->Parameters->setInteger(16, $fIDDocumentType);
+					$command->Parameters->setString(17, $fIDDocumentNumber);
 					
 					$command->ExecuteQuery();
 				}
@@ -198,7 +224,6 @@
 		$fCaptchaIsVerified = false;
 	}
 	
-	$connection->Close();
 ?>
 <!DOCTYPE html>
 <html>
@@ -226,7 +251,7 @@
     <script type="text/javascript" src="assets/dist/js/framework/bootstrap.min.js"></script>
     <script type="text/javascript" src="assets/dist/js/language/el_GR.js"></script>
 	
-	<script type="text/javascript" src="js/StepFormsJS/TextFunctions.js"></script>
+	<script type="text/javascript" src="js/StepFormsJS/TextFunctions.js?ID=<?php echo $time;?>"></script>
 	<script type="text/javascript">
 	
 	
@@ -251,44 +276,55 @@
 			RemoveCharactersThatAreNotNumbers($('#TextBoxBirthYear'));
 		};
 		
-		CheckRegistrationType();
+		$('#TextBoxIDDocumentNumber')[0].oninput = function(){
+			FixTextInputToUpperCase($('#TextBoxIDDocumentNumber'));
+		};
+
+
+		
+		CheckRegistrationType(<?php echo $fRegistrationOption;?>);
+		
+		<?php
+			if($fErrorCode>0)
+			{
+		?>
+				$("#ErrorMsg").html('<?php echo $fErrorDescription;?>');
+				$('#ErrModal').modal('show');
+		<?php
+			}
+		
+		?>
 	});
 	
 	function CheckRegistrationType()
-	{
-		var val = $('#RadioButtonRegistrationOption:checked').val();
-  		if(val==1)
+	{		
+  		var isFriend = $("#RadioButtonRegistrationOption1").is(':checked');
+  		var isMember= $("#RadioButtonRegistrationOption0").is(':checked');
+  		
+  		if(isMember)
+  		{
+  			$('#RadioButtonRegistrationOption1').prop('checked', true);
+  			
+  			$('#FriendDisclaimer').hide();
+  			$('#MemberDisclaimer').show();
+  		}  	
+  		else
   		{
   			$('#FriendDisclaimer').show();
   			$('#MemberDisclaimer').hide();
-  		}
-  		else
-  		{
-  			$('#FriendDisclaimer').hide();
-  			$('#MemberDisclaimer').show();
-  		}
+
+  		}	
 	}
 	
 	
 	function RestartProcess() { window.location = "/index.php"; }
 	function GoToStep2() 
 	{ 
-		var option =$('#RadioButtonRegistrationOption:checked').val();
-		var url = "ChooseNextStepByType.php?UniqueKey=<?php echo $fUniqueKey;?>&IsFriend="+option ;
+		var url = "ChooseNextStepByType.php?UniqueKey=<?php echo $fUniqueKey;?>";
 		window.location = url ;
 	}
 	
-	<?php
-		if($fErrorCode>0)
-		{
-	?>
-			$(document).ready(function() {
-				$("#ErrorMsg").html('<?php echo $fErrorDescription;?>');
-				$('#ErrModal').modal('show');
-			});
-	<?php
-		}
-	?>
+	
 	
 	  var imNotARobot = function() {
 	   	/*if ($('#TextBoxFirstName').val()!="" && $('#TextBoxLastName').val()!="" && $('#TextBoxFathersName').val()!="" && $('#TextBoxMothersName').val()!="" && $('#TextBoxBirthYear').val()!="")
@@ -305,13 +341,13 @@
 	
 	<script src='https://www.google.com/recaptcha/api.js'></script>
 
-    <style type="text/css">    	
-    	.register-photo {padding: 0px!important;}
+    <style type="text/css">
+		.register-photo {padding: 0px!important;}
         #RegistrationForm .form-control-feedback { pointer-events: auto;}
         #RegistrationForm .form-control-feedback:hover { cursor: pointer;}
     </style>
     
-    <?php include ("lib/config/analytics/php");?>
+    <?php include ("lib/config/analytics.php");?>
     
 </head>
 <body>
@@ -321,8 +357,10 @@
         <div class="form-group"> 
 	        <div class="row"><p style="text-align: center; color: #f20d18; font-size: 3em;"><b>ΠΡΟΕΓΓΡΑΦΕΙΤΕ</b></p></div>
 	        <div class="row"><p style="text-align: center; color: #f20d18; font-size: 1.5em;"><b>Για να μην περιμένετε στην ουρά!</b></p></div>
+	        <div class="row"><p style="text-align: center; color: #f20d18; font-size: 1.5em;"><b>Στις 12 Νοεμβρίου μπορείτε να ψηφίσετε σε όποιο εκλογικό κέντρο θέλετε!</b></p></div> 
 	        <div class="row"><p style="text-align: center;">Συμπληρώστε την <b>φόρμα εγγραφής</b></p></div>
-	        <div class="row"><p style="text-align: center;">Βάλτε τα στοιχεία σας με ακρίβεια όπως είναι στην ταυτότητά σας.<br>Aν έχετε δύο Επώνυμα βάλτε μόνο το πρώτο.</div>
+	        <div class="row"><p style="text-align: center;">Βάλτε τα στοιχεία σας με ακρίβεια όπως είναι στην ταυτότητά σας.<br>Aν έχετε δύο Επώνυμα 
+				ή δύο Ονόματα τότε βάλτε μόνο το πρώτο.</p></div>
 			<div class="row"><p style="text-align: center;">Αφού γίνει η ταυτοποίηση με τον εκλογικό κατάλογο προχωρείστε στο επόμενο βήμα.</p></div>
 		</div>
 	
@@ -330,46 +368,99 @@
         <div class="form-container">
             <form method="post" action="index.php#RegistrationForm" id="RegistrationForm" name="RegistrationForm<?php echo time();?>">
                 <div class="form-group">
-                    <input class="form-control" autocomplete="off" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Όνομα" name="TextBoxFirstName" id="TextBoxFirstName" value="<?php echo $fFirstName;?>" maxlength="30" />
-                	<small class="help-block" style="color:red;"><?php echo $fFirstNameError;?></small>
-                </div>
-                <div class="form-group">
-                    <input class="form-control" autocomplete="off" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Επώνυμο" name="TextBoxLastName" id="TextBoxLastName" value="<?php echo $fLastName;?>" maxlength="30" />
+                    <input class="form-control" autocomplete="off" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Επώνυμο" name="TextBoxLastName" id="TextBoxLastName" value="<?php echo $fLastName;?>" maxlength="30" autocomplete="off" />
                 	<small class="help-block" style="color:red;"><?php echo $fLastNameError;?></small>
                 </div>
+
+                <div class="form-group">
+                    <input class="form-control" autocomplete="off" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Όνομα" name="TextBoxFirstName" id="TextBoxFirstName" value="<?php echo $fFirstName;?>" maxlength="30" autocomplete="off" />
+                	<small class="help-block" style="color:red;"><?php echo $fFirstNameError;?></small>
+                </div>
+                
                 <div class="form-group"> 
-                    <input class="form-control" autocomplete="off" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Πατρώνυμο" name="TextBoxFathersName" id="TextBoxFathersName" value="<?php echo $fFathersName;?>" maxlength="30" />
+                    <input class="form-control" autocomplete="off" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Πατρώνυμο" name="TextBoxFathersName" id="TextBoxFathersName" value="<?php echo $fFathersName;?>" maxlength="30"autocomplete="off" />
                 	<small class="help-block" style="color:red;"><?php echo $fFathersNameError;?></small>
                 </div>
                 <div class="form-group"> 
-                    <input class="form-control" autocomplete="off" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Ονομα Μητέρας" name="TextBoxMothersName" id="TextBoxMothersName" value="<?php echo $fMothersName;?>" maxlength="30" />
+                    <input class="form-control" autocomplete="off" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Ονομα Μητέρας" name="TextBoxMothersName" id="TextBoxMothersName" value="<?php echo $fMothersName;?>" maxlength="30" autocomplete="off" />
                 	<small class="help-block" style="color:red;"><?php echo $fMothersNameError;?></small>
                 </div>
                 
                  <div class="form-group"> 
                     <div class="row">
 	                    <div class="col-sm-3">
-							<input class="form-control" autocomplete="off"  <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Έτος Γέννησης" name="TextBoxBirthYear" id="TextBoxBirthYear" value="<?php echo $fBirthYear;?>"  maxlength="4" style="width: 232px" />
+							<input class="form-control" autocomplete="off"  <?php if($fVoterIdFound){?> readonly="readonly"<?php }?> type="text" placeholder="* Έτος Γέννησης" name="TextBoxBirthYear" id="TextBoxBirthYear" value="<?php echo $fBirthYear;?>"  maxlength="4" style="width: 232px" autocomplete="off" />
 							<small class="help-block" style="color:red;"><?php echo $fBirthYearError;?></small>
 						</div>
 					</div>
                 </div>
                 
+                <div class="form-group">
+                	<div class="row">
+                	<div class="col-sm-12" style="font-size:12px;">
+                		
+                	</div>
+                	</div>
+                </div>
+                
                 <div class="form-group"> 
-                    <div class="row">
-	                     <div class="col-sm-9"><input onclick="CheckRegistrationType();"  <?php if($fRegistrationOption ==1){?> checked="checked"<?php }?> name="RadioButtonRegistrationOption" id="RadioButtonRegistrationOption" value="1" type="radio" /> Επιθυμώ να εγγραφώ ώς <b>Φίλος</b></div>
+                	<div class="row">
+	                	<div class="col-sm-3">Έγγραφο ταυτοποίησης:</div>
+	                	<div class="col-sm-5">
+		                	<select class="form-control" name="ComboBoxIDDocumentType" <?php if($fVoterIdFound){?> disabled="disabled"<?php }?>  >
+								<?php
+									$sql = "SELECT `ID`,`Title` FROM `voter_registration_id_document_types`";
+									$command = new MySQLCommand($connection, $sql);
+									$reader = $command->ExecuteReader();
+									while($reader->Read())
+									{
+										$id = $reader->getValue(0);
+										$title = $reader->getValue(1);
+								?>
+								<option <?php if($fIDDocumentType==$id){?> selected="selected"<?php }?> value="<?php echo $id;?>"><?php echo $title;?></option>
+								<?php
+									}
+									$reader->Close();
+								?>
+							</select>
+	                	</div>
 					</div>
-					<div class="row">
-						<div class="col-sm-9"><i>Μετά την επικύρωση των στοιχείων σας θα μεταφερθείτε στην υπηρεσία της Viva για πληρωμή του παραβόλου των &euro;3.00<br><br></i></div>
-					</div>
-
-					<div class="row">
-						 <div class="col-sm-9"><input onclick="CheckRegistrationType();"  <?php if($fRegistrationOption ==0){?> checked="checked"<?php }?>  name="RadioButtonRegistrationOption" id="RadioButtonRegistrationOption" value="0"  type="radio" /> Επιθυμώ να εγγραφώ ώς <b>Μέλος</b></div>
-					</div>
-					<div class="row">
-						<div class="col-sm-9"><i>Μετά την επικύρωση των στοιχείων σας θα σας ζητηθεί επιβεβαίωση στοιχείων επικοινωνίας πριν μεταφερθείτε στην υπηρεσία της Viva για πληρωμή του παραβόλου των &euro;3.00<br><br></i></div>
+					<div class="row" style="padding-top:4px;">
+						<div class="col-sm-3">Αριθμός εγγράφου:</div>
+						<div class="col-sm-5">
+							<input class="form-control" name="TextBoxIDDocumentNumber" id="TextBoxIDDocumentNumber" type="text" value="<?php echo $fIDDocumentNumber;?>" <?php if($fVoterIdFound){?> readonly="readonly"<?php }?>  /></div>
 					</div>
                 </div>
+
+                
+                <div class="form-group"> 
+					<div class="row">
+						<div class="col-sm-12" style="margin-top:5px;font-size:13px">
+							<input onclick="CheckRegistrationType();" <?php if($fVoterIdFound){?> disabled="disabled"<?php }?>  id="RadioButtonRegistrationOption1" name="RadioButtonRegistrationOption1" value="1" <?php if($fRegistrationOption==1 || $fRegistrationOption==0){?> checked="checked" <?php }?>  type="checkbox" /> 
+							Αποδέχομαι τις θεμελιώδεις αρχές που εμπνέουν από 
+							παλιά τη δράση της προοδευτικής/δημοκρατικής 
+							παράταξης στην Ελλάδα, μεταξύ των οποίων ξεχωρίζουν 
+							η δημοκρατία, ο σεβασμός των δικαιωμάτων του 
+							ανθρώπου και η κοινωνική δικαιοσύνη, και επιθυμώντας 
+							να συμβάλλω στην ανασυγκρότησή της,
+							ζητώ να συμμετάσχω στην ψηφοφορία της <b>12ης και 19ης Νοεμβρίου 2017</b> για την ανάδειξη του επικεφαλής του νέου ενιαίου πολιτικού φορέα
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="col-sm-12" style="margin-top:5px;font-size:13px">
+							<input onclick="CheckRegistrationType();" <?php if($fVoterIdFound){?> disabled="disabled"<?php }?> id="RadioButtonRegistrationOption0" name="RadioButtonRegistrationOption0" <?php if($fRegistrationOption==0){?> checked="checked" <?php }?>  value="0" type="checkbox" />
+							<b>Δηλώνω επί πλέον</b> ότι επιθυμώ να συμμετάσχω 
+							στις διαδικασίες που θα ακολουθήσουν, μετα την ανάδειξη του επικεφαλής, για την ίδρυση 
+							του νέου ενιαίου πολιτικού φορέα.
+						</div>
+					</div>
+					<br>
+                </div>
+                
+                
+				
+                
                 
                 <div class="form-group"> 
                     <div class="row">
@@ -378,7 +469,7 @@
 								if(!$fCaptchaIsVerified)
 								{
 							?>
-							<div class="g-recaptcha" id="Captcha" data-callback="imNotARobot" data-sitekey="6Ld37TIUAAAAAEbyCPZTv2OgcYwBgVo4fJXKzWgP"></div>
+							<div class="g-recaptcha" id="Captcha" data-callback="imNotARobot" data-sitekey="<?php echo $fRecaptchaSiteKey;?>"></div>
 							<?php
 								}
 							?>
@@ -387,7 +478,7 @@
                 </div>
 
                 <div class="well" style="min-height:500px!important">
-                    <span>* Ειδικός Εκλογικός Αριθμός <b>(Μάθε που ψηφίζεις)</b></span>
+                    <span>* Ειδικός Εκλογικός Αριθμός&nbsp;&nbsp;&nbsp;</span>
                     <button class="GreenSearchButton" type="button" id="ButtonFind" <?php if($fVoterIdFound){ ?> disabled="disabled" <?php }?> onclick="RegistrationForm.submit();">Αναζήτηση</button>
                     <br/>
                     <br/>
@@ -457,11 +548,15 @@
 				<div class="row">
 					<br>
 					<div id="FriendDisclaimer">
+						<div class="col-sm-12">
 						Υποβάλλοντας την παρούσα αίτηση για συμμετοχή στην ψηφοφορία για την ανάδειξη του επικεφαλής του νέου ενιαίου πολιτικού φορέα, παρέχω στην Ανεξάρτητη Επιτροπή Διαδικασιών και Δεοντολογίας (ΑΕΔΔ) τη συγκατάθεσή μου για χρήση και επεξεργασία των προσωπικών δεδομένων μου σύμφωνα με την ισχύουσα νομοθεσία (ν. 2472/1997). Και τούτο αποκλειστικά και μόνον στο πλαίσιο των ελέγχων που ενδέχεται να διεξαχθούν για την διακρίβωση της ταυτοπροσωπίας, καθώς και τυχόν εκλογικών παραβάσεων.
+						</div>
 					</div>
 					
 					<div id="MemberDisclaimer">
+						<div class="col-sm-12">
 						Δηλώνοντας την πρόθεσή μου να συμμετάσχω στη διαδικασία για την ίδρυση του νέου ενιαίου πολιτικού φορέα, παρέχω την συγκατάθεσή μου αφ’ ενός μεν στην Ανεξάρτητη Επιτροπή Διαδικασιών και Δεοντολογίας (ΑΕΔΔ) και, αφ’ ετέρου, στα προς τούτο επιφορτισμένα όργανα του υπό ίδρυση νέου πολιτικού φορέα, για χρήση και επεξεργασία των προσωπικών δεδομένων μου προς τον ανωτέρω σκοπό και για καταχώρησή τους στο μητρώο μελών του νέου πολιτικού φορέα. 
+						</div>
 					</div>
 				</div>
             </form>
@@ -501,3 +596,6 @@
   <!-------------------------------------------------------------------------------------------------------------------------------------------->
 </body>
 </html>
+<?php	
+	$connection->Close();
+?>

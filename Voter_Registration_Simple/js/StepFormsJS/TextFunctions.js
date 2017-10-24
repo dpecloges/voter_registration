@@ -55,6 +55,15 @@ function RemoveCharactersThatAreNotNumbers(str)
 }
 
 
+function FixTextInputToUpperCase(textInput)
+{
+	var s = textInput.val();
+	s = s.toUpperCase();
+	textInput.val(s);	
+}
+
+
+
 function ArrayCharactersReplace (search, replace, subject, countObj) { 
 	  var i = 0
 	  var j = 0

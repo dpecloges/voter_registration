@@ -68,7 +68,7 @@ if(!$fVoterIsFriend)
 	
 	if(!$voterInfoIsVerified)
 	{	
-		Print 'aaa';
+		Print 'Voter Info not verified';
 		exit;
 
 		$connection->Close();
@@ -81,8 +81,15 @@ if(!$fVoterIsFriend)
 
 
 // The POST URL and parameters
-//$request =  'http://demo.vivapayments.com/api/orders';		// demo environment URL
-$request =  'https://www.vivapayments.com/api/orders';	// production environment URL
+if($fDebugEnvironment)
+{
+	$request =  'http://demo.vivapayments.com/api/orders';		// demo environment URL
+}
+else
+{
+	$request =  'https://www.vivapayments.com/api/orders';	// production environment URL
+}
+
 
 
 //Set the Payment Amount
@@ -94,7 +101,12 @@ if($_POST['RadioButtonPaymentValue']==1)
 }
 else
 {
-	$Amount = floatval($_POST['TextBoxValue'])*100;
+	$Amount = floatval(Str_replace(",",".",$_POST['TextBoxValue']))*100;
+}
+
+if($Amount<300)
+{
+	$Amount = 300;
 }
 
 //Set some optional parameters (Full list available here: https://github.com/VivaPayments/API/wiki/Optional-Parameters)
@@ -167,7 +179,14 @@ if ($resultObj->ErrorCode==0)
 	$connection->Close();
 	if(!$fPayWithCash)
 	{
-		header('refresh: 0; url=https://www.vivapayments.com/web/newtransaction.aspx?ref='.$orderId);
+		if($fDebugEnvironment)
+		{
+			header('refresh: 0; url=https://demo.vivapayments.com/web/newtransaction.aspx?ref='.$orderId);
+		}
+		else
+		{
+			header('refresh: 0; url=https://www.vivapayments.com/web/newtransaction.aspx?ref='.$orderId);
+		}
 	}
 	else
 	{

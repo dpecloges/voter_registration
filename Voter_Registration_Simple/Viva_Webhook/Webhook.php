@@ -20,8 +20,12 @@
 	  )
 	);
 	$context = stream_context_create($opts);
-	$fWebhookAuthorizationData = file_get_contents($fWebHookAuthorizationCodeURL, false, $context);*/
+	$fWebhookAuthorizationData = file_get_contents($fWebHookAuthorizationCodeURL, false, $context);
+	echo $fWebhookAuthorizationData;
+	exit;*/
 	///////////////////////////////////////////////////////////////////////////////////////
+	
+
 	
 	$data = json_decode(file_get_contents('php://input'), true); 
 	$orderID = $data['EventData']['OrderCode'];
@@ -92,7 +96,14 @@
 							voter_registration.Area,
 							voter_registration.Zip,
 							voter_registration.VivaOrderID,
-							voter_registration.PaymentGatewayResponse)
+							voter_registration.PaymentType,
+							voter_registration.PaymentValue,
+							voter_registration.InvolveTypes,
+							voter_registration.InvolveProposal,
+							voter_registration.IDDocumentType,
+							voter_registration.IDDocumentNumber,
+							voter_registration.PaymentGatewayResponse
+							)
 			SELECT 
 							voter_registration_temp.IsFriend,
 							voter_registration_temp.UniqueKey,
@@ -121,6 +132,12 @@
 							voter_registration_temp.Area,
 							voter_registration_temp.Zip,
 							voter_registration_temp.VivaOrderID,
+							voter_registration_temp.PaymentType,
+							voter_registration_temp.PaymentValue,
+							voter_registration_temp.InvolveTypes,
+							voter_registration_temp.InvolveProposal,
+							voter_registration_temp.IDDocumentType,
+							voter_registration_temp.IDDocumentNumber,
 							?									
 		FROM `voter_registration_temp` WHERE voter_registration_temp.VivaOrderID=?';
 	$command = new MySqlCommand($connection, $sql);
@@ -162,10 +179,4 @@
 	
 	// Delete all other orders
 	$fVivaPaymentManager->CancelPreviousOrdersForVoterID($connection,$voterID );
-	
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// ECHO VIVA WEBHOOK AUTHORIZATION!!!!!!!
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	echo $fWebhookAuthorizationData;
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ?>

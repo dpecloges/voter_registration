@@ -5,14 +5,15 @@ class GoogleReCaptcha
     
     // Get new key from
     // https://www.google.com/recaptcha/admin#list
-   	private $fGoogleRecaptchaKey = "6Ld37TIUAAAAAJzds1aK1Ac6BjZOEuAX-pBfUfE5";
+   	//private $fGoogleRecaptchaKey = "6Ld37TIUAAAAAJzds1aK1Ac6BjZOEuAX-pBfUfE5";
+
    	
-	public function Verify($response)
+	public function Verify($response,$recaptchaSecretKey)
 	{
 		try
 		{
 			$url = "https://www.google.com/recaptcha/api/siteverify";
-			$data = array('secret' => $this->fGoogleRecaptchaKey, 'response' => $response);
+			$data = array('secret' => $recaptchaSecretKey, 'response' => $response);
 			$options = array(
 			        'http' => array(
 			        'header'  => "Content-type: application/x-www-form-urlencoded\r\n",

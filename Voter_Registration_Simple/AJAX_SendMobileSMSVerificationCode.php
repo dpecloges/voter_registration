@@ -6,7 +6,7 @@ header('Content-type: application/json');
 require_once("Classes/SMSController.php"); 
 $fSMSController = new SMSController();
 
-$fSecondsAllowedToSendSMS = 20;
+$fSecondsAllowedToSendSMS = 25;
 
 $fMobile = strtolower(trim($_POST['Mobile']));
 $fUniqueKey = $_POST['UniqueKey'];

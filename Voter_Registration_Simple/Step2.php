@@ -24,6 +24,8 @@
 	
 	if(isset($_POST['TextBoxEmail']))
 	{
+		
+	
 		$fEmail = $_POST['TextBoxEmail'];
 		$fMobilePhone = $_POST['TextBoxMobile'];
 		$fPhone = $_POST['TextBoxTelephone'];
@@ -38,6 +40,11 @@
 		$fZip = trim($_POST['TextBoxZipCode']);
 		$fEMail = trim($_POST['TextBoxEmail']);
 		$fProfessionID = intval($_POST['ComboBoxProfession']);
+		
+		$fInvolveTypesArray = $_POST['CheckboxInvolveType'];
+		$fInvolveProposal = $_POST['TextBoxInvloveProposal'];
+		
+		
 		
 		// Check if address is valid
 		if(!isset($_POST['AddressChange']))
@@ -83,6 +90,8 @@
 			}
 			else
 			{
+				$addressIsValid = true;
+
 				if($fStreet =="")
 				{
 					$fStreetError = 'Δέν έχετε εισάγει Οδό';
@@ -128,7 +137,7 @@
 		}
 		
 		
-		$sql = "UPDATE `voter_registration_temp` SET `Phone`=?,`CountryISO`=?,`RegionCode`=?,`Municipality`=?,`Street`=?,`StreetNo`=?,`Area`=?,`Zip`=?,`EMail`=?,`ProfessionID`=?  WHERE `UniqueKey`=?";
+		$sql = "UPDATE `voter_registration_temp` SET `Phone`=?,`CountryISO`=?,`RegionCode`=?,`Municipality`=?,`Street`=?,`StreetNo`=?,`Area`=?,`Zip`=?,`EMail`=?,`ProfessionID`=?,`InvolveTypes`=?,`InvolveProposal`=?  WHERE `UniqueKey`=?";
 		$command = new MySQLCommand($connection, $sql);
 		$command->Parameters->setString(1,$fPhone);
 		$command->Parameters->setString(2,$fCountryISO);
@@ -140,7 +149,11 @@
 		$command->Parameters->setString(8,$fZip);
 		$command->Parameters->setString(9,$fEMail);
 		$command->Parameters->setInteger(10,$fProfessionID);
-		$command->Parameters->setString(11,$fUniqueKey);
+		
+		$command->Parameters->setString(11,implode(",",$fInvolveTypesArray));
+		$command->Parameters->setString(12,$fInvolveProposal);
+		
+		$command->Parameters->setString(13,$fUniqueKey);
 		$command->ExecuteQuery();
 		
 		
@@ -182,7 +195,7 @@
 	
 	// Get User Data from db
 	$tempRecordFound = false;
-	$sql = "SELECT `EMail`,`MobilePhone`,`MobileIsVerified`,`Phone`,`CountryISO`,`RegionCode`,`Municipality`,`Street`,`StreetNo`,`Area`,`Zip` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
+	$sql = "SELECT `EMail`,`MobilePhone`,`MobileIsVerified`,`Phone`,`CountryISO`,`RegionCode`,`Municipality`,`Street`,`StreetNo`,`Area`,`Zip`,`InvolveTypes`,`InvolveProposal` FROM `voter_registration_temp` WHERE `UniqueKey`=? LIMIT 0,1";
 	$command = new MySQLCommand($connection, $sql);
 	$command->Parameters->setString(1,$fUniqueKey);
 	$reader = $command->ExecuteReader();
@@ -204,6 +217,9 @@
 		$fStreetNo = $reader->getValue(8);
 		$fArea = $reader->getValue(9);
 		$fZip = $reader->getValue(10);
+		
+		$fInvolveTypesArray = explode(",", $reader->getValue(11));
+		$fInvolveProposal = $reader->getValue(12);
 	}
 	$reader->Close();
 	
@@ -601,17 +617,17 @@
 		                </div>
 		                <br/><br/><br/>
 		                <div class="form-group">
-		                    <input type="tel" class="form-control" placeholder="* Τηλέφωνο κινητό" name="TextBoxMobile" id="TextBoxMobile" maxlength="10" value="<?php echo $fMobilePhone;?>" />
+		                    <input type="tel" class="form-control" placeholder="* Τηλέφωνο κινητό" name="TextBoxMobile" id="TextBoxMobile" maxlength="11" value="<?php echo $fMobilePhone;?>" />
 		                	<small class="help-block" style="color:red;" id="mobileError"><?php echo $fMobileError;?></small>
 		                </div>
 						<button type="button" class="btn btn-default" <?php if($fMobileIsVerified ==1){?>disabled="disabled"<?php }?> id="ButtonCheckMobile" onclick="OpeMobileVerificationForm();"><?php echo $fVerifyMobileButtonLabel;?></button>
 						<br/><br/><br/>
 		                <div class="form-group">
-		                    <input type="tel" style="visibility:collapse;" class="form-control" placeholder="Τηλέφωνο σταθερό" name="TextBoxTelephone" id="TextBoxTelephone" maxlength="10" value="<?php echo $fPhone;?>" />
+		                    <input type="tel" style="visibility:collapse;" class="form-control" placeholder="Τηλέφωνο σταθερό" name="TextBoxTelephone" id="TextBoxTelephone" maxlength="18" value="<?php echo $fPhone;?>" />
 		                </div>     
 		
        					 <div class="form-group">
-		                    <select class="form-control" placeholder="Επάγγελμα" name="ComboBoxProfession" id="ComboBoxProfession">
+		                    <select class="form-control" placeholder="Επάγγελμα" name="ComboBoxProfession" id="ComboBoxProfession" style="visibility:hidden">
 								<option value="0" disabled selected>Επάγγελμα</option>
 								<?php
 									$sql = "SELECT `ID`,`Title` FROM `voter_registration_professions` ORDER BY `Title`";
@@ -631,8 +647,12 @@
 									$reader->Close();
 								?>
 							</select>
-		                </div>    
+		                </div> 
+		                
             		</div>
+            		
+            		
+            		
             		<div class="col-sm-6">
             			<div id="map" style="width:100%;height:400px;"></div>
             			<div id="infowindow-content">
@@ -822,7 +842,34 @@
             		</div>
             	</div>
             	<br/>
+            	<div class="col-sm-12">
+					<br>
+    				<b>Θέλω να συμβάλλω στο νέο φορέα:</b>
+    				<br>
+    				<?php
+    					$sql = "SELECT `ID`,`Title` FROM `voter_registration_member_involve_fields`";
+    					$command = new MySqlCommand($connection,$sql);
+    					$reader = $command->ExecuteReader();
+    					while($reader->Read())
+    					{
+    						$id = $reader->getValue(0);
+    						$title = $reader->getValue(1);
+    				?>
+    				<div><input name="CheckboxInvolveType[]" <?php if(in_array($id,$fInvolveTypesArray)) { ?> checked="checked"<?php } ?> id="CheckboxInvolveType<?php echo $id;?>" value="<?php echo $id;?>" type="checkbox" /> <?php echo $title?></div>
+    				<?php
+    					}
+    					$reader->Close();
+    				?>
+    			</div>
+				<br/>
+				<br/>
+				<br>&nbsp;
+				<div class="col-sm-9">
+					<br/>
+					<textarea name="TextBoxInvloveProposal" placeholder="Αν θέλετε περιγράψτε τον τρόπο συμβολής σας" style="width: 538px; height: 57px;"><?php echo $fInvolveProposal;?></textarea></div>
+					<br/>&nbsp;<br>
                 <br/><br/>
+                &nbsp;
 			    <div class="row">
 			    	<div class="col-sm-6"><button type="button" class="btn btn-danger btn-block" onclick="ResetData();return false;">Επιστροφή στην αρχική</button></div>
 			    	<div class="col-sm-6"><button  type="submit" class="btn btn-success btn-block" onclick="submitData();return false;">Επόμενο βήμα</button></div>
