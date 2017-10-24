@@ -82,7 +82,7 @@
 					$fZipError = 'Ο Τ.Κ είναι απαραίτητος!';
 					$addressIsValid = false;
 				}	
-				else if(strlen($fZip)<=4)
+				else if(strlen($fZip)<=3)
 				{
 					$fZipError = 'Λάθος Τ.Κ!';
 					$addressIsValid = false;
@@ -456,7 +456,7 @@
 		function OpeMobileVerificationForm()
 		{
 			var mobileNo = $('#TextBoxMobile').val();
-			if(mobileNo.length<10 || mobileNo .substring(0, 2)!="69")
+			if(mobileNo.length<10)
 			{
 				$('#mobileError').html("Το πεδίο κινητό τηλέφωνο είναι υποχρεωτικό!");
 			}
